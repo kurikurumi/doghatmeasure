@@ -2,1279 +2,905 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>わんこ顔測定器 by くりくるみ</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Noto+Sans+JP:wght@300;400;500&display=swap');
-
-  :root {
-    --cream: #FDF6EC;
-    --warm: #F5E6CC;
-    --paw: #D4845A;
-    --paw-dark: #A85C35;
-    --nose: #3D2B1F;
-    --accent: #E8A87C;
-    --green: #7BAE7F;
-    --text: #3D2B1F;
-    --shadow: rgba(61,43,31,0.15);
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--cream);
-    min-height: 100vh;
-    color: var(--text);
-    overflow-x: hidden;
-  }
-
-  /* Paw print background */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(ellipse 18px 14px at 20px 20px, rgba(212,132,90,0.06) 100%, transparent 100%),
-      radial-gradient(circle 6px at 8px 8px, rgba(212,132,90,0.06) 100%, transparent 100%),
-      radial-gradient(circle 6px at 32px 8px, rgba(212,132,90,0.06) 100%, transparent 100%);
-    background-size: 120px 120px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 24px 16px 48px;
-  }
-
-  header {
-    text-align: center;
-    margin-bottom: 32px;
-    animation: fadeDown 0.6s ease;
-  }
-
-  .logo {
-    font-family: 'Dela Gothic One', sans-serif;
-    font-size: clamp(28px, 7vw, 42px);
-    color: var(--paw-dark);
-    letter-spacing: -1px;
-    line-height: 1;
-  }
-
-  .logo span { color: var(--paw); }
-
-  .subtitle {
-    font-size: 13px;
-    color: #8a6a55;
-    margin-top: 6px;
-    font-weight: 300;
-    letter-spacing: 0.05em;
-  }
-
-  /* Steps */
-  .steps {
-    display: flex;
-    justify-content: center;
-    gap: 0;
-    margin-bottom: 24px;
-    animation: fadeDown 0.6s 0.1s ease both;
-  }
-
-  .step {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    color: #b09080;
-    font-weight: 300;
-  }
-
-  .step.active { color: var(--paw-dark); font-weight: 500; }
-  .step.done { color: var(--green); }
-
-  .step-num {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
-    font-weight: 500;
-    background: var(--warm);
-    color: #b09080;
-    transition: all 0.3s;
-  }
-
-  .step.active .step-num { background: var(--paw); color: white; }
-  .step.done .step-num { background: var(--green); color: white; }
-
-  .step-sep {
-    width: 24px; height: 1px;
-    background: var(--warm);
-    margin: 0 4px;
-    align-self: center;
-  }
-
-  /* Card */
-  .card {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 4px 32px var(--shadow);
-    overflow: hidden;
-    animation: fadeUp 0.6s 0.15s ease both;
-  }
-
-  /* Upload area */
-  .upload-area {
-    padding: 40px 24px;
-    text-align: center;
-    border: 2px dashed var(--accent);
-    margin: 24px;
-    border-radius: 14px;
-    cursor: pointer;
-    transition: all 0.3s;
-    background: var(--cream);
-  }
-
-  .upload-area:hover, .upload-area.drag-over {
-    border-color: var(--paw);
-    background: var(--warm);
-    transform: scale(1.01);
-  }
-
-  .upload-icon { font-size: 48px; margin-bottom: 12px; }
-
-  .upload-text {
-    font-size: 15px;
-    color: var(--paw-dark);
-    font-weight: 500;
-    margin-bottom: 6px;
-  }
-
-  .upload-sub {
-    font-size: 12px;
-    color: #b09080;
-    font-weight: 300;
-  }
-
-  #fileInput { display: none; }
-
-  /* Canvas area */
-  .canvas-wrap {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    padding: 16px 16px 0;
-    background: #1a120d;
-    min-height: 200px;
-  }
-
-  #canvas {
-    max-width: 100%;
-    border-radius: 8px;
-    cursor: crosshair;
-    display: block;
-  }
-
-  /* Instruction bar */
-  .instruction {
-    background: var(--paw);
-    color: white;
-    text-align: center;
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-  }
-
-  .instruction .point-indicator {
-    background: rgba(255,255,255,0.25);
-    border-radius: 50%;
-    width: 22px; height: 22px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 700;
-  }
-
-  /* Points legend */
-  .point-guide {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    padding: 12px 16px;
-    flex-wrap: wrap;
-    background: #1a120d;
-  }
-
-  .point-dot {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 11px;
-    color: #ddc9b8;
-  }
-
-  .dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-  }
-
-  /* Result */
-  .result-panel {
-    padding: 24px;
-    text-align: center;
-  }
-
-  .result-label {
-    font-size: 12px;
-    color: #b09080;
-    font-weight: 300;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .result-value {
-    font-family: 'Dela Gothic One', sans-serif;
-    font-size: clamp(36px, 10vw, 56px);
-    color: var(--paw-dark);
-    line-height: 1;
-    margin-bottom: 4px;
-    animation: pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  .result-unit {
-    font-size: 18px;
-    color: var(--paw);
-    font-family: 'Dela Gothic One', sans-serif;
-  }
-
-  .result-sub {
-    font-size: 12px;
-    color: #b09080;
-    margin-top: 8px;
-    font-weight: 300;
-  }
-
-  .result-details {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 16px;
-    padding: 0 8px;
-  }
-
-  .detail-box {
-    background: var(--cream);
-    border-radius: 10px;
-    padding: 12px;
-  }
-
-  .detail-box .label {
-    font-size: 10px;
-    color: #b09080;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 4px;
-    font-weight: 300;
-  }
-
-  .detail-box .value {
-    font-size: 18px;
-    font-family: 'Dela Gothic One', sans-serif;
-    color: var(--paw-dark);
-  }
-
-  /* Buttons */
-  .btn-row {
-    display: flex;
-    gap: 10px;
-    padding: 16px 24px 24px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .btn {
-    padding: 11px 22px;
-    border-radius: 30px;
-    border: none;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    letter-spacing: 0.03em;
-  }
-
-  .btn-primary {
-    background: var(--paw);
-    color: white;
-    box-shadow: 0 4px 16px rgba(212,132,90,0.35);
-  }
-
-  .btn-primary:hover {
-    background: var(--paw-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(212,132,90,0.4);
-  }
-
-  .btn-secondary {
-    background: var(--warm);
-    color: var(--paw-dark);
-  }
-
-  .btn-secondary:hover {
-    background: #eddfc5;
-    transform: translateY(-1px);
-  }
-
-  .btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  /* Canvas area – zoom対応 */
-  .canvas-wrap {
-    position: relative;
-    overflow: hidden;
-    background: #1a120d;
-    touch-action: none;
-    min-height: 200px;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-  }
-
-  #canvas {
-    border-radius: 8px;
-    cursor: crosshair;
-    display: block;
-    transform-origin: 0 0;
-    /* スムーズなズーム */
-    will-change: transform;
-  }
-
-  /* zoom hint */
-  .zoom-hint {
-    background: rgba(0,0,0,0.55);
-    color: #fff;
-    font-size: 11px;
-    text-align: center;
-    padding: 5px 10px;
-    letter-spacing: 0.03em;
-  }
-
-  .tip {
-    background: linear-gradient(135deg, #fff8f0, #fdf0e3);
-    border-left: 3px solid var(--accent);
-    border-radius: 0 10px 10px 0;
-    padding: 12px 16px;
-    margin: 0 24px 16px;
-    font-size: 12px;
-    color: #8a6a55;
-    line-height: 1.6;
-  }
-
-  .tip strong { color: var(--paw-dark); }
-
-  /* Animations */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  @keyframes pop {
-    from { transform: scale(0.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-
-  .hidden { display: none !important; }
-
-  /* Scale panel */
-  .scale-panel {
-    margin: 0 24px 16px;
-    background: linear-gradient(135deg, #fff8f0, #fdf0e3);
-    border: 1.5px solid var(--accent);
-    border-radius: 14px;
-    padding: 16px;
-  }
-
-  .scale-panel-title {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--paw-dark);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-
-  .scale-tabs {
-    display: flex;
-    background: var(--warm);
-    border-radius: 8px;
-    padding: 3px;
-    margin-bottom: 14px;
-    gap: 3px;
-  }
-
-  .scale-tab {
-    flex: 1;
-    padding: 7px 4px;
-    border: none;
-    background: transparent;
-    border-radius: 6px;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 11px;
-    font-weight: 500;
-    color: #b09080;
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .scale-tab.active {
-    background: white;
-    color: var(--paw-dark);
-    box-shadow: 0 1px 4px var(--shadow);
-  }
-
-  .scale-section { display: none; }
-  .scale-section.active { display: block; }
-
-  .ref-objects {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .ref-obj {
-    background: white;
-    border: 1.5px solid var(--warm);
-    border-radius: 8px;
-    padding: 8px 4px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-size: 10px;
-    color: #8a6a55;
-  }
-
-  .ref-obj:hover { border-color: var(--paw); }
-  .ref-obj.selected { border-color: var(--paw); background: #fff0e6; color: var(--paw-dark); font-weight: 500; }
-
-  .ref-obj .ref-icon { font-size: 20px; display: block; margin-bottom: 3px; }
-  .ref-obj .ref-name { display: block; }
-  .ref-obj .ref-size { display: block; font-size: 9px; color: #c0a898; }
-
-  .ref-instruction {
-    font-size: 11px;
-    color: #8a6a55;
-    background: white;
-    border-radius: 8px;
-    padding: 8px 10px;
-    line-height: 1.5;
-    margin-bottom: 8px;
-  }
-
-  .ref-canvas-wrap {
-    position: relative;
-    background: #1a120d;
-    border-radius: 8px;
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 8px;
-  }
-
-  #canvasRef {
-    max-width: 100%;
-    display: block;
-    cursor: crosshair;
-  }
-
-  .ref-status {
-    font-size: 11px;
-    color: var(--paw-dark);
-    font-weight: 500;
-    text-align: center;
-    min-height: 18px;
-  }
-
-  .manual-input-row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-
-  .manual-input-row label {
-    font-size: 12px;
-    color: #8a6a55;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .scale-input {
-    flex: 1;
-    padding: 8px 10px;
-    border: 1.5px solid var(--warm);
-    border-radius: 8px;
-    font-family: 'Noto Sans JP', sans-serif;
-    font-size: 13px;
-    color: var(--text);
-    background: white;
-    outline: none;
-    transition: border-color 0.2s;
-    -webkit-appearance: none;
-  }
-
-  .scale-input:focus { border-color: var(--paw); }
-
-  .scale-unit {
-    font-size: 12px;
-    color: #8a6a55;
-    flex-shrink: 0;
-  }
-
-  .cm-result-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 8px;
-    margin-top: 12px;
-  }
-
-  .cm-box {
-    background: white;
-    border-radius: 10px;
-    padding: 10px 6px;
-    text-align: center;
-    border: 1px solid var(--warm);
-  }
-
-  .cm-box .label {
-    font-size: 9px;
-    color: #b09080;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 4px;
-    font-weight: 300;
-  }
-
-  .cm-box .value {
-    font-size: 16px;
-    font-family: 'Dela Gothic One', sans-serif;
-    color: var(--paw-dark);
-  }
-
-  .cm-box.highlight {
-    border-color: var(--paw);
-    background: #fff5ee;
-  }
-
-  .cm-box.highlight .value { color: var(--paw-dark); font-size: 18px; }
+:root {
+  --cream: #FDF6EC;
+  --warm:  #F5E6CC;
+  --paw:   #D4845A;
+  --dark:  #A85C35;
+  --accent:#E8A87C;
+  --green: #7BAE7F;
+  --text:  #3D2B1F;
+  --shadow:rgba(61,43,31,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;
+  background:var(--cream);min-height:100vh;color:var(--text);
+  -webkit-text-size-adjust:100%;overscroll-behavior:none;
+}
+
+/* ---- Header ---- */
+.header{
+  text-align:center;padding:18px 16px 14px;
+  background:#fff;border-bottom:1px solid var(--warm);
+  position:sticky;top:0;z-index:200;
+}
+.logo{font-size:clamp(20px,5.5vw,30px);font-weight:900;color:var(--dark);}
+.logo span{color:var(--paw);}
+.subtitle{font-size:11px;color:#8a6a55;margin-top:3px;}
+
+/* ---- Steps ---- */
+.steps{
+  display:flex;justify-content:center;align-items:center;
+  padding:10px 16px;background:var(--cream);
+}
+.step{display:flex;align-items:center;gap:5px;font-size:11px;color:#b09080;}
+.step.active{color:var(--dark);font-weight:700;}
+.step.done{color:var(--green);}
+.step-num{
+  width:20px;height:20px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;background:var(--warm);color:#b09080;
+  transition:all .3s;
+}
+.step.active .step-num{background:var(--paw);color:#fff;}
+.step.done  .step-num{background:var(--green);color:#fff;}
+.step-sep{width:18px;height:1px;background:var(--warm);margin:0 3px;}
+
+/* ---- Card ---- */
+.card{
+  background:#fff;border-radius:16px;
+  margin:0 12px 16px;box-shadow:0 2px 16px var(--shadow);overflow:hidden;
+}
+
+/* ---- Phase 1: Upload ---- */
+.upload-area{
+  padding:40px 24px;text-align:center;
+  border:2.5px dashed var(--accent);margin:20px;border-radius:14px;
+  cursor:pointer;background:var(--cream);transition:background .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.upload-area:active{background:var(--warm);}
+.upload-icon{font-size:54px;margin-bottom:14px;}
+.upload-text{font-size:16px;color:var(--dark);font-weight:700;margin-bottom:6px;}
+.upload-sub{font-size:12px;color:#b09080;}
+#fileInput{display:none;}
+
+.tip{
+  background:#fff8f0;border-left:3px solid var(--accent);
+  margin:0 20px 20px;padding:12px 14px;border-radius:0 10px 10px 0;
+  font-size:12px;color:#7a5a45;line-height:1.75;
+}
+.tip strong{color:var(--dark);}
+
+/* ---- Phase 2: Canvas ---- */
+.instr-bar{
+  background:var(--paw);color:#fff;
+  text-align:center;padding:11px 16px;font-size:13px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
+}
+.instr-badge{
+  background:rgba(255,255,255,.28);border-radius:50%;
+  width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0;
+}
+
+#canvasWrap{
+  position:relative;width:100%;height:55vh;min-height:240px;
+  background:#1a120d;overflow:hidden;touch-action:none;user-select:none;
+}
+#mainCanvas{display:block;width:100%;height:100%;cursor:crosshair;}
+
+.legend{
+  display:flex;justify-content:center;gap:14px;
+  padding:8px 16px;background:#1a120d;flex-wrap:wrap;
+}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#ddc9b8;}
+.legend-dot{width:10px;height:10px;border-radius:50%;}
+
+.zoom-hint{
+  text-align:center;font-size:10px;color:#cdb9a8;
+  background:#1a120d;padding:3px 16px 8px;
+}
+
+.btn-row{
+  display:flex;gap:8px;padding:12px 14px;
+  justify-content:center;flex-wrap:wrap;
+}
+.btn{
+  padding:9px 16px;border-radius:30px;border:none;
+  font-size:12px;font-weight:600;cursor:pointer;
+  transition:transform .12s;-webkit-tap-highlight-color:transparent;
+  letter-spacing:.02em;font-family:inherit;
+}
+.btn:active{transform:scale(.94);}
+.btn:disabled{opacity:.35;pointer-events:none;}
+.btn-primary{background:var(--paw);color:#fff;box-shadow:0 3px 12px rgba(212,132,90,.35);}
+.btn-sub{background:var(--warm);color:var(--dark);}
+.btn-ghost{background:#fff;border:1.5px solid var(--warm);color:var(--dark);}
+
+/* ---- Phase 3: Result ---- */
+#resultWrap{background:#1a120d;display:flex;justify-content:center;}
+#resultCanvas{max-width:100%;max-height:38vh;display:block;}
+
+.res-panel{padding:18px 20px 0;text-align:center;}
+.res-label{font-size:11px;color:#b09080;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
+.res-big{font-size:clamp(38px,11vw,60px);font-weight:900;color:var(--dark);line-height:1;}
+.res-unit{font-size:18px;color:var(--paw);}
+.res-note{font-size:11px;color:#b09080;margin-top:5px;}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.res-box{background:var(--cream);border-radius:10px;padding:10px;}
+.res-box .rb-label{font-size:10px;color:#b09080;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
+.res-box .rb-val{font-size:16px;font-weight:700;color:var(--dark);}
+
+/* ---- Scale panel ---- */
+.scale-panel{
+  margin:14px 20px;background:#fff8f0;
+  border:1.5px solid var(--accent);border-radius:14px;padding:14px;
+}
+.scale-title{font-size:12px;font-weight:700;color:var(--dark);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.ref-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:12px;}
+.ref-tab{
+  padding:7px 2px;border:1.5px solid var(--warm);border-radius:8px;
+  background:#fff;font-size:10px;color:#8a6a55;
+  cursor:pointer;text-align:center;line-height:1.5;
+  -webkit-tap-highlight-color:transparent;transition:all .15s;font-family:inherit;
+}
+.ref-tab.active{border-color:var(--paw);background:#fff0e6;color:var(--dark);font-weight:700;}
+.ref-tab:active{transform:scale(.94);}
+
+.ref-desc{
+  font-size:11px;color:#7a5a45;margin-bottom:10px;line-height:1.7;
+  background:#fff;border-radius:8px;padding:9px 11px;
+}
+.custom-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.custom-row label{font-size:12px;color:#7a5a45;white-space:nowrap;}
+.ref-input{
+  flex:1;padding:8px 10px;border:1.5px solid var(--warm);border-radius:8px;
+  font-size:14px;font-family:inherit;color:var(--text);background:#fff;
+  outline:none;-webkit-appearance:none;
+}
+.ref-input:focus{border-color:var(--paw);}
+.ref-unit{font-size:12px;color:#7a5a45;}
+
+#refCanvasWrap{background:#1a120d;border-radius:8px;overflow:hidden;margin-bottom:8px;}
+#refCanvas{display:block;max-width:100%;cursor:crosshair;}
+.ref-status{font-size:11px;color:var(--dark);font-weight:600;text-align:center;min-height:16px;}
+
+.cm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
+.cm-box{background:#fff;border:1px solid var(--warm);border-radius:8px;padding:8px 4px;text-align:center;}
+.cm-box.hl{border-color:var(--paw);background:#fff5ee;}
+.cm-box .cm-label{font-size:9px;color:#b09080;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.cm-box .cm-val{font-size:14px;font-weight:700;color:var(--dark);}
+.cm-box.hl .cm-val{font-size:17px;}
+
+/* ---- Footer ---- */
+.footer{text-align:center;padding:20px 16px 48px;}
+.footer-sub{font-size:11px;color:#b09080;margin-bottom:10px;}
+.footer-btn{
+  display:inline-block;background:var(--paw);color:#fff;text-decoration:none;
+  padding:11px 26px;border-radius:30px;font-size:13px;font-weight:700;
+  box-shadow:0 4px 16px rgba(212,132,90,.35);
+}
+.footer-copy{font-size:10px;color:#c0a898;margin-top:12px;}
+
+.hidden{display:none!important;}
 </style>
 </head>
 <body>
 
-<div class="container">
-  <header>
-    <div class="logo">🐾 わんこ<span>顔</span>測定器</div>
-    <div class="subtitle">by くりくるみ｜犬の顔の輪郭円周を測定します</div>
-  </header>
+<div class="header">
+  <div class="logo">🐾 わんこ<span>顔</span>測定器</div>
+  <div class="subtitle">by くりくるみ｜犬の顔まわりのサイズを測定します</div>
+</div>
 
-  <!-- Steps -->
-  <div class="steps" id="stepsBar">
-    <div class="step active" id="step1"><div class="step-num">1</div> 写真を選ぶ</div>
-    <div class="step-sep"></div>
-    <div class="step" id="step2"><div class="step-num">2</div> 4点を指定</div>
-    <div class="step-sep"></div>
-    <div class="step" id="step3"><div class="step-num">3</div> 計測結果</div>
-  </div>
+<div class="steps" id="stepsBar">
+  <div class="step active" id="s1"><div class="step-num">1</div>&nbsp;写真選択</div>
+  <div class="step-sep"></div>
+  <div class="step" id="s2"><div class="step-num">2</div>&nbsp;4点指定</div>
+  <div class="step-sep"></div>
+  <div class="step" id="s3"><div class="step-num">3</div>&nbsp;計測結果</div>
+</div>
 
+<!-- ===== Phase 1 ===== -->
+<div id="phase1">
   <div class="card">
-
-    <!-- Phase 1: Upload -->
-    <div id="phaseUpload">
-      <div class="upload-area" id="dropZone">
-        <div class="upload-icon">🐶</div>
-        <div class="upload-text">写真をタップして選択</div>
-        <div class="upload-sub">JPG / PNG / WEBP 対応</div>
-        <input type="file" id="fileInput" accept="image/*">
-      </div>
-      <div class="tip" style="margin-top:16px;">
-        <strong>📌 ヒント：</strong>正面から撮った写真が最も精度よく計測できます。顔全体が写っているものを選びましょう。<br>実寸（cm）換算には <strong>500円玉を一緒に写す</strong> のがおすすめです 🪙
-      </div>
+    <div class="upload-area" id="dropZone">
+      <div class="upload-icon">🐶</div>
+      <div class="upload-text">写真をタップして選択</div>
+      <div class="upload-sub">カメラまたはフォトライブラリから</div>
+      <input type="file" id="fileInput" accept="image/*">
     </div>
-
-    <!-- Phase 2: Mark points -->
-    <div id="phasePoints" class="hidden">
-      <div class="zoom-hint">🤏 ピンチで拡大縮小 ／ 2本指でスクロール ／ 指1本でタップして点を置く</div>
-      <div class="canvas-wrap" id="canvasWrap">
-        <canvas id="canvas"></canvas>
-      </div>
-      <div class="point-guide">
-        <div class="point-dot"><div class="dot" style="background:#FF6B6B"></div> 左端</div>
-        <div class="point-dot"><div class="dot" style="background:#FFD93D"></div> 右端</div>
-        <div class="point-dot"><div class="dot" style="background:#6BCB77"></div> 上端</div>
-        <div class="point-dot"><div class="dot" style="background:#4D96FF"></div> 下端</div>
-      </div>
-      <div class="instruction" id="instruction">
-        <span class="point-indicator">1</span> 顔の<strong>左端</strong>をタップしてください
-      </div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" id="zoomInBtn">🔍＋</button>
-        <button class="btn btn-secondary" id="zoomOutBtn">🔍－</button>
-        <button class="btn btn-secondary" id="zoomResetBtn">全体</button>
-        <button class="btn btn-secondary" id="undoBtn" disabled>↩ 戻る</button>
-        <button class="btn btn-secondary" id="resetPointsBtn">🔄 リセット</button>
-      </div>
+  </div>
+  <div class="card">
+    <div class="tip" style="margin:16px;">
+      <strong>📌 撮影のポイント</strong><br>
+      ① 正面から、顔全体が入るように撮影してください<br>
+      ② <strong>500円玉・クレジットカード</strong>を一緒に写すと実寸（cm）を算出できます 🪙<br>
+      ③ 明るい場所 ＆ ピントを合わせると精度が上がります
     </div>
-
-    <!-- Phase 3: Result -->
-    <div id="phaseResult" class="hidden">
-      <div class="canvas-wrap">
-        <canvas id="canvasResult"></canvas>
-      </div>
-      <div class="result-panel">
-        <div class="result-label">顔の輪郭 推定円周</div>
-        <div class="result-value" id="circumVal">—</div>
-        <div class="result-sub" id="circumSub">画像ピクセル基準（実測値と異なります）</div>
-        <div class="result-details">
-          <div class="detail-box">
-            <div class="label">横幅（長径）</div>
-            <div class="value" id="axisA">—</div>
-          </div>
-          <div class="detail-box">
-            <div class="label">縦幅（短径）</div>
-            <div class="value" id="axisB">—</div>
-          </div>
-        </div>
-      </div>
-      <!-- Scale / cm converter -->
-      <div class="scale-panel">
-        <div class="scale-panel-title">📐 実寸（cm）に換算する</div>
-
-        <!-- Mode tabs -->
-        <div class="scale-tabs">
-          <button class="scale-tab active" id="tabCoin"   onclick="switchScaleTab('coin')">🪙 500円玉</button>
-          <button class="scale-tab"        id="tabCustom" onclick="switchScaleTab('custom')">📏 カスタム</button>
-        </div>
-
-        <!-- ① 500円玉 -->
-        <div class="scale-section active" id="sectionCoin">
-          <div class="ref-instruction">
-            写真に写っている <strong>500円玉</strong>（直径2.4cm）の
-            <strong>左端 → 右端</strong> の順に2点タップしてください
-          </div>
-          <div class="ref-canvas-wrap"><canvas id="canvasRef"></canvas></div>
-          <div class="ref-status" id="refStatus">👆 500円玉の左端をタップ</div>
-        </div>
-
-        <!-- ② カスタム -->
-        <div class="scale-section" id="sectionCustom">
-          <div class="ref-instruction">
-            写真に写っている基準物の実寸を入力して、<strong>左端 → 右端</strong> の順に2点タップしてください
-          </div>
-          <div class="manual-input-row" style="margin-bottom:12px;">
-            <label>基準物のサイズ：</label>
-            <input class="scale-input" type="number" id="customCmInput" placeholder="例: 8.56" min="0.1" max="200" step="0.01">
-            <span class="scale-unit">cm</span>
-          </div>
-          <div class="ref-canvas-wrap"><canvas id="canvasRefCustom"></canvas></div>
-          <div class="ref-status" id="refStatusCustom">👆 基準物の左端をタップ</div>
-        </div>
-
-        <!-- cm result (shared) -->
-        <div class="cm-result-row hidden" id="cmResultRow">
-          <div class="cm-box">
-            <div class="label">横幅</div>
-            <div class="value" id="cmAxisA">—</div>
-          </div>
-          <div class="cm-box highlight">
-            <div class="label">顔の円周</div>
-            <div class="value" id="cmCircum">—</div>
-          </div>
-          <div class="cm-box">
-            <div class="label">縦幅</div>
-            <div class="value" id="cmAxisB">—</div>
-          </div>
-        </div>
-        <div class="ref-status hidden" id="cmNote" style="margin-top:6px;font-size:10px;color:#b09080;"></div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn btn-primary" id="retryBtn">🔄 もう一度測る</button>
-        <button class="btn btn-secondary" id="newPhotoBtn">📷 別の写真</button>
-      </div>
-    </div>
-
   </div>
 </div>
 
-<!-- Footer -->
-<div style="text-align:center;padding:24px 16px 40px;position:relative;z-index:1;">
-  <div style="font-size:12px;color:#b09080;margin-bottom:8px;">測定できたら、ぜひオーダーを 🐾</div>
-  <a href="https://minne.com/@kurinoix" target="_blank" rel="noopener"
-     style="display:inline-block;background:#D4845A;color:white;text-decoration:none;
-            padding:10px 24px;border-radius:30px;font-size:13px;font-weight:500;
-            font-family:'Noto Sans JP',sans-serif;box-shadow:0 4px 16px rgba(212,132,90,0.35);
-            transition:all 0.2s;">
+<!-- ===== Phase 2 ===== -->
+<div id="phase2" class="hidden">
+  <div class="card">
+    <div class="instr-bar" id="instrBar">
+      <span class="instr-badge">1</span>&nbsp;顔の<strong>左端</strong>をタップしてください
+    </div>
+    <div id="canvasWrap">
+      <canvas id="mainCanvas"></canvas>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:#FF6B6B"></div>①左端</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#FFD93D"></div>②右端</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6BCB77"></div>③上端</div>
+      <div class="legend-item"><div class="legend-dot" style="background:#4D96FF"></div>④下端</div>
+    </div>
+    <div class="zoom-hint">🤏 ピンチで拡大 ／ 拡大中は1本指でスクロール ／ タップで点を置く</div>
+    <div class="btn-row">
+      <button class="btn btn-sub" id="zoomInBtn">🔍＋</button>
+      <button class="btn btn-sub" id="zoomOutBtn">🔍－</button>
+      <button class="btn btn-sub" id="zoomResetBtn">全体</button>
+      <button class="btn btn-sub" id="undoBtn" disabled>↩ 戻る</button>
+      <button class="btn btn-ghost" id="resetBtn">🔄 リセット</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Phase 3 ===== -->
+<div id="phase3" class="hidden">
+  <div class="card">
+    <div id="resultWrap"><canvas id="resultCanvas"></canvas></div>
+
+    <div class="res-panel">
+      <div class="res-label">顔まわり 推定サイズ</div>
+      <div class="res-big" id="circumPx">—<span class="res-unit"> px</span></div>
+      <div class="res-note">楕円近似（ラマヌジャン公式）による推定値です</div>
+      <div class="res-grid">
+        <div class="res-box">
+          <div class="rb-label">横幅（左端〜右端）</div>
+          <div class="rb-val" id="widthPx">—</div>
+        </div>
+        <div class="res-box">
+          <div class="rb-label">縦幅（上端〜下端）</div>
+          <div class="rb-val" id="heightPx">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="scale-panel">
+      <div class="scale-title">📐 実寸（cm）に換算する</div>
+      <div class="ref-tabs">
+        <button class="ref-tab active" data-ref="coin500">🪙<br>500円玉</button>
+        <button class="ref-tab" data-ref="card_w">💳<br>カード横</button>
+        <button class="ref-tab" data-ref="card_h">💳<br>カード縦</button>
+        <button class="ref-tab" data-ref="custom">✏️<br>カスタム</button>
+      </div>
+
+      <div class="custom-row hidden" id="customRow">
+        <label>基準サイズ：</label>
+        <input class="ref-input" type="number" id="customCm" placeholder="例: 8.56" min="0.5" max="100" step="0.01">
+        <span class="ref-unit">cm</span>
+      </div>
+
+      <div class="ref-desc" id="refDesc">
+        写真に写っている <strong>500円玉</strong>（直径 2.65 cm）の<br>
+        <strong>左端 → 右端</strong> の順に2点タップしてください
+      </div>
+
+      <div id="refCanvasWrap"><canvas id="refCanvas"></canvas></div>
+      <div class="ref-status" id="refStatus">👆 基準物の左端をタップ</div>
+
+      <div class="cm-grid hidden" id="cmGrid">
+        <div class="cm-box">
+          <div class="cm-label">横幅</div>
+          <div class="cm-val" id="cmWidth">—</div>
+        </div>
+        <div class="cm-box hl">
+          <div class="cm-label">顔まわり</div>
+          <div class="cm-val" id="cmCircum">—</div>
+        </div>
+        <div class="cm-box">
+          <div class="cm-label">縦幅</div>
+          <div class="cm-val" id="cmHeight">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="retryBtn">🔄 やり直す</button>
+      <button class="btn btn-sub" id="newPhotoBtn">📷 別の写真</button>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-sub">計測が終わったら、ぜひオーダーを 🐾</div>
+  <a class="footer-btn" href="https://minne.com/@kurinoix" target="_blank" rel="noopener">
     🛍️ くりくるみ の帽子をみる（minne）
   </a>
-  <div style="font-size:10px;color:#c0a898;margin-top:12px;">© くりくるみ｜このツールは無料でご利用いただけます</div>
+  <div class="footer-copy">© くりくるみ｜このツールは無料でご利用いただけます</div>
 </div>
 
 <script>
-// ===== State =====
-let imageDataURL = null;
+'use strict';
+
+// ============================================================
+//  State
+// ============================================================
 let img = null;
-let points = [];
+let imgDataURL = null;
+let facePoints = [];   // [{x,y}] in image-pixel coordinates
 
-const POINT_LABELS = ['左端', '右端', '上端', '下端'];
-const POINT_COLORS = ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF'];
-const POINT_ICONS  = ['←', '→', '↑', '↓'];
+const COLORS = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF'];
+const LABELS = ['左端','右端','上端','下端'];
 
-// ===== Zoom state =====
-let zoomScale = 1;
-let zoomOffX  = 0;
-let zoomOffY  = 0;
-let minZoom   = 1;
-const MAX_ZOOM = 8;
+// View transform:  canvas_px = img_px * scale + offset
+let view = { x:0, y:0, scale:1, minScale:0.1 };
 
-// ピンチ判定フラグ（指が2本以上触れたことがある）
-let touchCount    = 0;   // 現在画面に触れている指の数
-let wasPinching   = false; // このタッチシーケンスでピンチがあったか
-let lastPinchDist = 0;
-let lastPinchMidX = 0;
-let lastPinchMidY = 0;
-let lastPanX      = 0;
-let lastPanY      = 0;
+// Touch state machine
+// States: 'idle' | 'maybe-tap' | 'panning' | 'pinching'
+let tState = 'idle';
+let tStart = null;   // {cx, cy, vx, vy}  canvas pos + view at touchstart
+let pinch  = null;   // {dist, midCx, midCy, scale0, vx0, vy0}
 
-// ===== Elements =====
-const dropZone      = document.getElementById('dropZone');
-const fileInput     = document.getElementById('fileInput');
-const canvas        = document.getElementById('canvas');
-const ctx           = canvas.getContext('2d');
-const canvasWrap    = document.getElementById('canvasWrap');
-const canvasResult  = document.getElementById('canvasResult');
-const ctxR          = canvasResult.getContext('2d');
-const instruction   = document.getElementById('instruction');
-const undoBtn       = document.getElementById('undoBtn');
-const resetPointsBtn= document.getElementById('resetPointsBtn');
-const zoomInBtn     = document.getElementById('zoomInBtn');
-const zoomOutBtn    = document.getElementById('zoomOutBtn');
-const zoomResetBtn  = document.getElementById('zoomResetBtn');
-const retryBtn      = document.getElementById('retryBtn');
-const newPhotoBtn   = document.getElementById('newPhotoBtn');
+// Reference calibration
+const REF_DEFS = {
+  coin500: { label:'500円玉',              cm: 2.65 },
+  card_w:  { label:'クレジットカード（横）', cm: 8.56 },
+  card_h:  { label:'クレジットカード（縦）', cm: 5.40 },
+  custom:  { label:'カスタム',              cm: 0    },
+};
+let refMode = 'coin500';
+let refPoints = [];   // [{x,y}] in image-pixel coordinates (max 2)
+let cmPerPx = null;
 
-// ===== Phase switching =====
-function showPhase(phase) {
-  ['phaseUpload','phasePoints','phaseResult'].forEach(id =>
-    document.getElementById(id).classList.add('hidden'));
-  document.getElementById(phase).classList.remove('hidden');
-  const s = { phaseUpload:1, phasePoints:2, phaseResult:3 }[phase];
-  ['step1','step2','step3'].forEach((id, i) => {
-    const el = document.getElementById(id);
+// ============================================================
+//  Elements
+// ============================================================
+const mainCanvas  = document.getElementById('mainCanvas');
+const ctx         = mainCanvas.getContext('2d');
+const resultCanvas= document.getElementById('resultCanvas');
+const rCtx        = resultCanvas.getContext('2d');
+const refCanvas   = document.getElementById('refCanvas');
+const refCtx      = refCanvas.getContext('2d');
+
+// ============================================================
+//  Phase navigation
+// ============================================================
+function showPhase(n) {
+  ['phase1','phase2','phase3'].forEach((id,i)=>{
+    document.getElementById(id).classList.toggle('hidden', i+1!==n);
+  });
+  ['s1','s2','s3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
     el.classList.remove('active','done');
-    if (i+1 < s) el.classList.add('done');
-    else if (i+1 === s) el.classList.add('active');
+    if(i+1<n) el.classList.add('done');
+    else if(i+1===n) el.classList.add('active');
   });
 }
 
-// ===== Upload =====
-dropZone.addEventListener('click', () => fileInput.click());
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault(); dropZone.classList.remove('drag-over');
-  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+// ============================================================
+//  Upload
+// ============================================================
+const dropZone  = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('click', ()=> fileInput.click());
+dropZone.addEventListener('dragover', e=>{ e.preventDefault(); });
+dropZone.addEventListener('drop', e=>{
+  e.preventDefault();
+  const f = e.dataTransfer.files[0];
+  if(f) loadFile(f);
 });
-fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
+fileInput.addEventListener('change', ()=>{
+  if(fileInput.files[0]) loadFile(fileInput.files[0]);
+});
 
 function loadFile(file) {
   const reader = new FileReader();
-  reader.onload = e => { imageDataURL = e.target.result; startMeasure(); };
+  reader.onload = e => { imgDataURL = e.target.result; startMeasure(); };
   reader.readAsDataURL(file);
 }
 
-// ===== Measure phase =====
+// ============================================================
+//  Measure phase setup
+// ============================================================
 function startMeasure() {
-  points = [];
-  wasPinching = false;
+  facePoints = [];
   img = new Image();
   img.onload = () => {
-    // フル解像度でcanvasを作成
-    canvas.width  = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-
-    // 初期ズーム：wrapの幅に収まるように（縮小のみ、拡大しない）
-    showPhase('phasePoints'); // 先にphaseを表示してwrapの幅を確定
-    const wrapW = canvasWrap.clientWidth || window.innerWidth - 32;
-    minZoom   = Math.min(1, wrapW / img.naturalWidth);
-    zoomScale = minZoom;
-    zoomOffX  = 0;
-    zoomOffY  = 0;
-    applyZoom();
-    drawCanvas();
-    updateInstruction();
+    showPhase(2);
+    // Wait one frame so canvasWrap has layout dimensions
+    requestAnimationFrame(() => {
+      const wrap = document.getElementById('canvasWrap');
+      mainCanvas.width  = wrap.clientWidth  || 360;
+      mainCanvas.height = wrap.clientHeight || 280;
+      fitImage();
+      redraw();
+      updateInstr();
+    });
   };
-  img.src = imageDataURL;
+  img.src = imgDataURL;
 }
 
-// ===== Zoom =====
-function applyZoom() {
-  canvas.style.transform       = `scale(${zoomScale})`;
-  canvas.style.transformOrigin = '0 0';
-  canvas.style.marginLeft      = zoomOffX + 'px';
-  canvas.style.marginTop       = zoomOffY + 'px';
-  // wrap高さをcanvas表示高さに合わせる（スクロール不要に）
-  canvasWrap.style.height = Math.round(canvas.height * zoomScale) + 'px';
+function fitImage() {
+  const s = Math.min(mainCanvas.width/img.naturalWidth, mainCanvas.height/img.naturalHeight);
+  view.scale    = s;
+  view.minScale = Math.max(0.05, s * 0.4);
+  view.x = (mainCanvas.width  - img.naturalWidth  * s) / 2;
+  view.y = (mainCanvas.height - img.naturalHeight * s) / 2;
 }
 
-function clampOffset() {
-  const dispW = canvas.width  * zoomScale;
-  const dispH = canvas.height * zoomScale;
-  const wrapW = canvasWrap.clientWidth;
-  // X: 画像が右にはみ出さない、左にもはみ出さない
-  if (dispW <= wrapW) {
-    zoomOffX = 0; // 収まるなら中央寄せしない（左詰め）
-  } else {
-    zoomOffX = Math.min(0, Math.max(wrapW - dispW, zoomOffX));
+// ============================================================
+//  Coordinate helpers
+// ============================================================
+function canvasToImg(cx, cy) {
+  return { x:(cx-view.x)/view.scale, y:(cy-view.y)/view.scale };
+}
+
+function clampView() {
+  const iw = img.naturalWidth  * view.scale;
+  const ih = img.naturalHeight * view.scale;
+  const mg = 50;
+  view.x = Math.max(mg-iw, Math.min(mainCanvas.width  - mg, view.x));
+  view.y = Math.max(mg-ih, Math.min(mainCanvas.height - mg, view.y));
+}
+
+// Get canvas-pixel position from a touch/mouse client event
+function clientToCanvas(clientX, clientY) {
+  const rect = mainCanvas.getBoundingClientRect();
+  const sx = mainCanvas.width  / rect.width;
+  const sy = mainCanvas.height / rect.height;
+  return { x:(clientX-rect.left)*sx, y:(clientY-rect.top)*sy };
+}
+
+// ============================================================
+//  Draw
+// ============================================================
+function redraw() {
+  ctx.clearRect(0,0,mainCanvas.width,mainCanvas.height);
+  if(!img) return;
+
+  // Image
+  ctx.save();
+  ctx.setTransform(view.scale,0,0,view.scale,view.x,view.y);
+  ctx.drawImage(img,0,0);
+  ctx.restore();
+
+  // Ellipse preview
+  const ell = computeEllipse(facePoints);
+  if(ell && facePoints.length>=3) {
+    ctx.save();
+    ctx.setTransform(view.scale,0,0,view.scale,view.x,view.y);
+    ctx.strokeStyle='rgba(255,200,80,0.9)';
+    ctx.lineWidth=3/view.scale;
+    ctx.setLineDash([8/view.scale,4/view.scale]);
+    ctx.shadowColor='rgba(255,140,40,0.7)';
+    ctx.shadowBlur=10/view.scale;
+    ctx.beginPath();
+    ctx.ellipse(ell.cx,ell.cy,ell.a,ell.b,0,0,Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
   }
-  zoomOffY = Math.min(0, Math.max(0, zoomOffY)); // 上方向は0固定
+
+  // Face points
+  const r = Math.max(10, 20/view.scale);
+  facePoints.forEach((p,i)=>{
+    const cx = p.x*view.scale+view.x;
+    const cy = p.y*view.scale+view.y;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx,cy,r,0,Math.PI*2);
+    ctx.fillStyle=COLORS[i];
+    ctx.fill();
+    ctx.strokeStyle='#fff';
+    ctx.lineWidth=2.5;
+    ctx.stroke();
+    ctx.font=`bold ${Math.round(r*0.85)}px sans-serif`;
+    ctx.fillStyle='#fff';
+    ctx.textAlign='center';
+    ctx.textBaseline='middle';
+    ctx.fillText(i+1,cx,cy);
+    ctx.restore();
+  });
 }
 
-function zoomAt(cx, cy, newScale) {
-  newScale = Math.min(MAX_ZOOM, Math.max(minZoom, newScale));
-  const ratio = newScale / zoomScale;
-  zoomOffX = cx - ratio * (cx - zoomOffX);
-  zoomOffY = cy - ratio * (cy - zoomOffY);
-  zoomScale = newScale;
-  clampOffset();
-  applyZoom();
+// ============================================================
+//  Ellipse math
+// ============================================================
+function computeEllipse(pts) {
+  if(pts.length<2) return null;
+  const L=pts[0],R=pts[1];
+  const a=Math.abs(R.x-L.x)/2;
+  const cx=(L.x+R.x)/2;
+  if(pts.length<4) return {cx, cy:(L.y+R.y)/2, a, b:a*0.65};
+  const T=pts[2],B=pts[3];
+  const b=Math.abs(B.y-T.y)/2;
+  const cy=(T.y+B.y)/2;
+  return {cx,cy,a,b};
 }
 
-zoomInBtn.addEventListener('click',    () => zoomAt(canvasWrap.clientWidth/2, 0, zoomScale * 1.6));
-zoomOutBtn.addEventListener('click',   () => zoomAt(canvasWrap.clientWidth/2, 0, zoomScale / 1.6));
-zoomResetBtn.addEventListener('click', () => {
-  zoomScale = minZoom; zoomOffX = 0; zoomOffY = 0; applyZoom();
-});
+function ellipseCircum(a,b) {
+  return Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)));
+}
 
-// ===== Touch: Pinch zoom & pan — 点置きと完全分離 =====
-canvasWrap.addEventListener('touchstart', e => {
-  touchCount = e.touches.length;
-  if (e.touches.length === 2) {
-    wasPinching   = true;
-    const t0 = e.touches[0], t1 = e.touches[1];
-    lastPinchDist = Math.hypot(t0.clientX-t1.clientX, t0.clientY-t1.clientY);
-    const rect = canvasWrap.getBoundingClientRect();
-    lastPinchMidX = ((t0.clientX+t1.clientX)/2) - rect.left;
-    lastPinchMidY = ((t0.clientY+t1.clientY)/2) - rect.top;
-  } else if (e.touches.length === 1 && !wasPinching) {
-    lastPanX = e.touches[0].clientX;
-    lastPanY = e.touches[0].clientY;
+// ============================================================
+//  Instruction update
+// ============================================================
+function updateInstr() {
+  const bar = document.getElementById('instrBar');
+  if(facePoints.length>=4) {
+    bar.innerHTML='✅ 4点の指定が完了しました！';
+    return;
   }
-}, { passive: true });
+  const i=facePoints.length;
+  bar.innerHTML=`<span class="instr-badge">${i+1}</span>&nbsp;顔の<strong>${LABELS[i]}</strong>をタップしてください`;
+}
 
-canvasWrap.addEventListener('touchmove', e => {
+// ============================================================
+//  Touch handling (state machine)
+// ============================================================
+mainCanvas.addEventListener('touchstart', onTouchStart, {passive:false});
+mainCanvas.addEventListener('touchmove',  onTouchMove,  {passive:false});
+mainCanvas.addEventListener('touchend',   onTouchEnd,   {passive:false});
+mainCanvas.addEventListener('touchcancel',()=>{ tState='idle'; pinch=null; tStart=null; },{passive:true});
+
+function onTouchStart(e) {
   e.preventDefault();
-  if (e.touches.length === 2) {
-    wasPinching = true;
-    const t0 = e.touches[0], t1 = e.touches[1];
-    const dist = Math.hypot(t0.clientX-t1.clientX, t0.clientY-t1.clientY);
-    const rect  = canvasWrap.getBoundingClientRect();
-    const midX  = ((t0.clientX+t1.clientX)/2) - rect.left;
-    const midY  = ((t0.clientY+t1.clientY)/2) - rect.top;
-    if (lastPinchDist > 0) zoomAt(midX, midY, zoomScale * dist / lastPinchDist);
-    lastPinchDist = dist;
-    lastPinchMidX = midX;
-    lastPinchMidY = midY;
-  } else if (e.touches.length === 1 && wasPinching) {
-    // ピンチ後の1本指はパンのみ（点置き禁止）
-    const t = e.touches[0];
-    zoomOffX += t.clientX - lastPanX;
-    zoomOffY += t.clientY - lastPanY;
-    clampOffset(); applyZoom();
-    lastPanX = t.clientX;
-    lastPanY = t.clientY;
-  } else if (e.touches.length === 1 && zoomScale > minZoom) {
-    // ズーム中の1本指パン
-    const t = e.touches[0];
-    zoomOffX += t.clientX - lastPanX;
-    zoomOffY += t.clientY - lastPanY;
-    clampOffset(); applyZoom();
-    lastPanX = t.clientX;
-    lastPanY = t.clientY;
+  if(e.touches.length===1) {
+    const t=e.touches[0];
+    const pos=clientToCanvas(t.clientX,t.clientY);
+    tStart={cx:pos.x,cy:pos.y,vx:view.x,vy:view.y};
+    tState='maybe-tap';
+  } else if(e.touches.length===2) {
+    const t0=e.touches[0],t1=e.touches[1];
+    const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+    const mid=clientToCanvas((t0.clientX+t1.clientX)/2,(t0.clientY+t1.clientY)/2);
+    pinch={dist0:dist,midCx:mid.x,midCy:mid.y,scale0:view.scale,vx0:view.x,vy0:view.y};
+    tState='pinching';
   }
-}, { passive: false });
-
-canvasWrap.addEventListener('touchend', e => {
-  touchCount = e.touches.length;
-  // 全ての指が離れたらwasPinchingをリセット
-  if (e.touches.length === 0) {
-    wasPinching = false;
-  }
-  if (e.touches.length === 1) {
-    lastPanX = e.touches[0].clientX;
-    lastPanY = e.touches[0].clientY;
-  }
-}, { passive: true });
-
-// ===== Tap to place point（touchendで処理）=====
-canvasWrap.addEventListener('touchend', e => {
-  // ピンチ中・ピンチ直後・複数指・指が残っている場合はすべて無視
-  if (wasPinching)              return;
-  if (e.changedTouches.length !== 1) return;
-  if (e.touches.length > 0)    return; // まだ指が残っている
-  if (points.length >= 4)      return;
-
-  const t = e.changedTouches[0];
-  const rect = canvasWrap.getBoundingClientRect();
-  const p = wrapToCanvas(t.clientX - rect.left, t.clientY - rect.top);
-  if (p.x < 0 || p.y < 0 || p.x > canvas.width || p.y > canvas.height) return;
-  points.push(p);
-  undoBtn.disabled = false;
-  drawCanvas();
-  updateInstruction();
-}, { passive: true });
-
-// マウス用クリック
-canvasWrap.addEventListener('click', e => {
-  if (points.length >= 4) return;
-  const rect = canvasWrap.getBoundingClientRect();
-  const p = wrapToCanvas(e.clientX - rect.left, e.clientY - rect.top);
-  if (p.x < 0 || p.y < 0 || p.x > canvas.width || p.y > canvas.height) return;
-  points.push(p);
-  undoBtn.disabled = false;
-  drawCanvas();
-  updateInstruction();
-});
-
-function wrapToCanvas(wx, wy) {
-  return {
-    x: (wx - zoomOffX) / zoomScale,
-    y: (wy - zoomOffY) / zoomScale
-  };
 }
 
-function drawCanvas() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0);
+function onTouchMove(e) {
+  e.preventDefault();
+  if(e.touches.length===2) {
+    if(tState!=='pinching') {
+      // Started as single touch, became pinch
+      const t0=e.touches[0],t1=e.touches[1];
+      const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+      const mid=clientToCanvas((t0.clientX+t1.clientX)/2,(t0.clientY+t1.clientY)/2);
+      pinch={dist0:dist,midCx:mid.x,midCy:mid.y,scale0:view.scale,vx0:view.x,vy0:view.y};
+      tState='pinching';
+    }
+    const t0=e.touches[0],t1=e.touches[1];
+    const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
+    const mid=clientToCanvas((t0.clientX+t1.clientX)/2,(t0.clientY+t1.clientY)/2);
+    if(pinch && pinch.dist0>0) {
+      const newScale=Math.max(view.minScale,Math.min(12,pinch.scale0*dist/pinch.dist0));
+      // Keep image point under initial pinch center fixed under current mid
+      const imgX=(pinch.midCx-pinch.vx0)/pinch.scale0;
+      const imgY=(pinch.midCy-pinch.vy0)/pinch.scale0;
+      view.x=mid.x - imgX*newScale;
+      view.y=mid.y - imgY*newScale;
+      view.scale=newScale;
+      clampView();
+      redraw();
+    }
+  } else if(e.touches.length===1) {
+    const t=e.touches[0];
+    const pos=clientToCanvas(t.clientX,t.clientY);
+    if(tStart) {
+      const dx=pos.x-tStart.cx, dy=pos.y-tStart.cy;
+      if(Math.hypot(dx,dy)>8) {
+        tState='panning';
+      }
+      if(tState==='panning') {
+        view.x=tStart.vx+dx;
+        view.y=tStart.vy+dy;
+        clampView();
+        redraw();
+      }
+    }
+  }
+}
 
-  if (points.length >= 3) {
-    const e = computeEllipse(points);
-    if (e) {
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = Math.max(3, 6 / zoomScale);
-      ctx.setLineDash([10, 6]);
-      ctx.beginPath();
-      ctx.ellipse(e.cx, e.cy, e.a, e.b, 0, 0, Math.PI*2);
-      ctx.stroke();
-      ctx.restore();
+function onTouchEnd(e) {
+  e.preventDefault();
+  if(tState==='maybe-tap' && e.changedTouches.length===1 && e.touches.length===0) {
+    placeFacePoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+  }
+  if(e.touches.length===0) {
+    tState='idle'; pinch=null; tStart=null;
+  } else if(e.touches.length===1 && tState==='pinching') {
+    // Lifted one finger after pinch – resume pan mode
+    const t=e.touches[0];
+    const pos=clientToCanvas(t.clientX,t.clientY);
+    tStart={cx:pos.x,cy:pos.y,vx:view.x,vy:view.y};
+    tState='panning';
+  }
+}
+
+// Mouse (desktop)
+mainCanvas.addEventListener('click', e=>{
+  placeFacePoint(e.clientX, e.clientY);
+});
+mainCanvas.addEventListener('wheel', e=>{
+  e.preventDefault();
+  const pos=clientToCanvas(e.clientX,e.clientY);
+  const factor=e.deltaY<0?1.15:1/1.15;
+  const newScale=Math.max(view.minScale,Math.min(12,view.scale*factor));
+  const imgX=(pos.x-view.x)/view.scale;
+  const imgY=(pos.y-view.y)/view.scale;
+  view.x=pos.x-imgX*newScale;
+  view.y=pos.y-imgY*newScale;
+  view.scale=newScale;
+  clampView(); redraw();
+},{passive:false});
+
+function placeFacePoint(clientX, clientY) {
+  if(!img || facePoints.length>=4) return;
+  const pos=clientToCanvas(clientX,clientY);
+  const ip=canvasToImg(pos.x,pos.y);
+  if(ip.x<0||ip.y<0||ip.x>img.naturalWidth||ip.y>img.naturalHeight) return;
+  facePoints.push(ip);
+  document.getElementById('undoBtn').disabled=false;
+  redraw();
+  updateInstr();
+  if(facePoints.length===4) setTimeout(showResult,600);
+}
+
+// ============================================================
+//  Zoom buttons
+// ============================================================
+document.getElementById('zoomInBtn').addEventListener('click',()=>{
+  zoomCenter(1.5);
+});
+document.getElementById('zoomOutBtn').addEventListener('click',()=>{
+  zoomCenter(1/1.5);
+});
+document.getElementById('zoomResetBtn').addEventListener('click',()=>{
+  fitImage(); redraw();
+});
+document.getElementById('undoBtn').addEventListener('click',()=>{
+  facePoints.pop();
+  document.getElementById('undoBtn').disabled=facePoints.length===0;
+  redraw(); updateInstr();
+});
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  facePoints=[];
+  document.getElementById('undoBtn').disabled=true;
+  redraw(); updateInstr();
+});
+
+function zoomCenter(factor) {
+  const cx=mainCanvas.width/2, cy=mainCanvas.height/2;
+  const newScale=Math.max(view.minScale,Math.min(12,view.scale*factor));
+  const imgX=(cx-view.x)/view.scale;
+  const imgY=(cy-view.y)/view.scale;
+  view.x=cx-imgX*newScale;
+  view.y=cy-imgY*newScale;
+  view.scale=newScale;
+  clampView(); redraw();
+}
+
+// ============================================================
+//  Show result
+// ============================================================
+function showResult() {
+  const ell=computeEllipse(facePoints);
+  if(!ell) return;
+
+  // Draw result canvas (fits within card)
+  const maxW=Math.min(640, window.innerWidth-24);
+  const sc=Math.min(1, maxW/img.naturalWidth,
+                       (window.innerHeight*0.38)/img.naturalHeight);
+  resultCanvas.width =Math.round(img.naturalWidth *sc);
+  resultCanvas.height=Math.round(img.naturalHeight*sc);
+  rCtx.drawImage(img,0,0,resultCanvas.width,resultCanvas.height);
+
+  // Filled ellipse overlay
+  rCtx.save();
+  rCtx.globalAlpha=0.18;
+  rCtx.fillStyle='#FFB347';
+  rCtx.beginPath();
+  rCtx.ellipse(ell.cx*sc,ell.cy*sc,ell.a*sc,ell.b*sc,0,0,Math.PI*2);
+  rCtx.fill();
+  rCtx.restore();
+
+  // Ellipse border
+  rCtx.save();
+  rCtx.strokeStyle='#FF8C42';
+  rCtx.lineWidth=3;
+  rCtx.shadowColor='rgba(255,140,66,0.6)';
+  rCtx.shadowBlur=8;
+  rCtx.beginPath();
+  rCtx.ellipse(ell.cx*sc,ell.cy*sc,ell.a*sc,ell.b*sc,0,0,Math.PI*2);
+  rCtx.stroke();
+  rCtx.restore();
+
+  // Points
+  facePoints.forEach((p,i)=>{
+    rCtx.save();
+    rCtx.beginPath();
+    rCtx.arc(p.x*sc,p.y*sc,7,0,Math.PI*2);
+    rCtx.fillStyle=COLORS[i];
+    rCtx.fill();
+    rCtx.strokeStyle='#fff';
+    rCtx.lineWidth=2;
+    rCtx.stroke();
+    rCtx.restore();
+  });
+
+  const circ=ellipseCircum(ell.a,ell.b);
+  document.getElementById('circumPx').innerHTML=
+    `${Math.round(circ)}<span class="res-unit"> px</span>`;
+  document.getElementById('widthPx').textContent=`${Math.round(ell.a*2)} px`;
+  document.getElementById('heightPx').textContent=`${Math.round(ell.b*2)} px`;
+
+  // Reset calibration UI
+  cmPerPx=null; refPoints=[];
+  document.getElementById('cmGrid').classList.add('hidden');
+  document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
+
+  showPhase(3);
+
+  // Init reference canvas after phase is visible
+  requestAnimationFrame(()=> initRefCanvas());
+}
+
+// ============================================================
+//  Reference canvas (for cm calibration)
+// ============================================================
+function initRefCanvas() {
+  if(!img) return;
+  const wrap=document.getElementById('refCanvasWrap');
+  const maxW=Math.min(540, wrap.clientWidth||360);
+  const sc=Math.min(1,maxW/img.naturalWidth);
+  refCanvas.width =Math.round(img.naturalWidth *sc);
+  refCanvas.height=Math.round(img.naturalHeight*sc);
+  refPoints=[];
+  drawRefCanvas();
+  document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
+  document.getElementById('cmGrid').classList.add('hidden');
+}
+
+function drawRefCanvas() {
+  refCtx.drawImage(img,0,0,refCanvas.width,refCanvas.height);
+  refPoints.forEach((p,i)=>{
+    refCtx.save();
+    refCtx.beginPath();
+    refCtx.arc(p.x,p.y,8,0,Math.PI*2);
+    refCtx.fillStyle=i===0?'#FF6B6B':'#4D96FF';
+    refCtx.fill();
+    refCtx.strokeStyle='#fff';
+    refCtx.lineWidth=2;
+    refCtx.stroke();
+    refCtx.restore();
+  });
+  if(refPoints.length===2) {
+    refCtx.save();
+    refCtx.strokeStyle='#FFD93D';
+    refCtx.lineWidth=2;
+    refCtx.setLineDash([6,4]);
+    refCtx.beginPath();
+    refCtx.moveTo(refPoints[0].x,refPoints[0].y);
+    refCtx.lineTo(refPoints[1].x,refPoints[1].y);
+    refCtx.stroke();
+    refCtx.restore();
+  }
+}
+
+function addRefPoint(clientX, clientY) {
+  if(refPoints.length>=2) {
+    refPoints=[];
+    document.getElementById('cmGrid').classList.add('hidden');
+  }
+  const rect=refCanvas.getBoundingClientRect();
+  const sx=refCanvas.width/rect.width;
+  const sy=refCanvas.height/rect.height;
+  refPoints.push({
+    x:(clientX-rect.left)*sx,
+    y:(clientY-rect.top)*sy
+  });
+
+  const st=document.getElementById('refStatus');
+  if(refPoints.length===1) {
+    st.textContent='👆 基準物の右端をタップ';
+  } else {
+    computeCmPerPx();
+  }
+  drawRefCanvas();
+}
+
+refCanvas.addEventListener('click', e=> addRefPoint(e.clientX,e.clientY));
+refCanvas.addEventListener('touchend', e=>{
+  e.preventDefault();
+  if(e.changedTouches.length===1) addRefPoint(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
+},{passive:false});
+
+function computeCmPerPx() {
+  if(refPoints.length<2) return;
+  const dx=refPoints[1].x-refPoints[0].x;
+  const dy=refPoints[1].y-refPoints[0].y;
+  const pxDist=Math.sqrt(dx*dx+dy*dy);
+  if(pxDist<5) return;
+
+  // Convert refCanvas px distance → image px distance
+  const sc=refCanvas.width/img.naturalWidth;
+  const imgPxDist=pxDist/sc;
+
+  let cm=REF_DEFS[refMode].cm;
+  if(refMode==='custom') {
+    cm=parseFloat(document.getElementById('customCm').value);
+    if(!cm||cm<=0){
+      alert('カスタムサイズを入力してください（cm）');
+      refPoints=[];
+      drawRefCanvas();
+      document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
+      return;
     }
   }
 
-  // 点はズームに関係なく一定の見た目になるよう逆スケール
-  const dotR = Math.max(10, 22 / zoomScale);
-  const fontSize = Math.max(14, 22 / zoomScale);
-  points.forEach((p, i) => {
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, dotR, 0, Math.PI*2);
-    ctx.fillStyle = POINT_COLORS[i];
-    ctx.fill();
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = Math.max(2, 4 / zoomScale);
-    ctx.stroke();
-    ctx.restore();
-
-    ctx.save();
-    ctx.font = `bold ${fontSize}px sans-serif`;
-    ctx.fillStyle = 'white';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(POINT_ICONS[i], p.x, p.y);
-    ctx.restore();
-  });
-}
-
-function updateInstruction() {
-  if (points.length >= 4) {
-    instruction.innerHTML = '✅ 4点の指定が完了しました！';
-    setTimeout(showResult, 800);
-    return;
-  }
-  const i = points.length;
-  instruction.innerHTML = `<span class="point-indicator">${i+1}</span> 顔の<strong>${POINT_LABELS[i]}</strong>をタップしてください`;
-}
-
-undoBtn.addEventListener('click', () => {
-  points.pop();
-  undoBtn.disabled = points.length === 0;
-  drawCanvas(); updateInstruction();
-});
-
-resetPointsBtn.addEventListener('click', () => {
-  points = []; undoBtn.disabled = true;
-  drawCanvas(); updateInstruction();
-});
-
-// ===== Ellipse computation =====
-// Given: left(L), right(R), top(T), bottom(B) on canvas
-// cx = (L.x + R.x)/2, cy = (T.y + B.y)/2
-// a = half width = |R.x - L.x|/2, b = half height = |B.y - T.y|/2
-function computeEllipse(pts) {
-  // pts order: left(0), right(1), top(2), bottom(3) (partial ok)
-  if (pts.length < 2) return null;
-  const L = pts[0], R = pts[1];
-  const a = Math.abs(R.x - L.x) / 2;
-  const cx = (L.x + R.x) / 2;
-  if (pts.length < 4) {
-    return { cx, cy: (L.y+R.y)/2, a, b: a * 0.7 }; // preview
-  }
-  const T = pts[2], B = pts[3];
-  const b  = Math.abs(B.y - T.y) / 2;
-  const cy = (T.y + B.y) / 2;
-  return { cx, cy, a, b };
-}
-
-// Ramanujan approximation: C ≈ π * [ 3(a+b) - √((3a+b)(a+3b)) ]
-function ellipseCircumference(a, b) {
-  return Math.PI * (3*(a+b) - Math.sqrt((3*a+b)*(a+3*b)));
-}
-
-// ===== Result =====
-function showResult() {
-  const e = computeEllipse(points);
-  if (!e) return;
-
-  // Mirror to result canvas（フル解像度から表示用にスケール）
-  const maxW = Math.min(640, window.innerWidth - 32);
-  const dispScale = Math.min(1, maxW / img.naturalWidth);
-  canvasResult.width  = Math.round(img.naturalWidth  * dispScale);
-  canvasResult.height = Math.round(img.naturalHeight * dispScale);
-  ctxR.drawImage(img, 0, 0, canvasResult.width, canvasResult.height);
-
-  // Draw filled ellipse overlay（dispScaleで縮小）
-  ctxR.save();
-  ctxR.globalAlpha = 0.18;
-  ctxR.fillStyle = '#FFB347';
-  ctxR.beginPath();
-  ctxR.ellipse(e.cx*dispScale, e.cy*dispScale, e.a*dispScale, e.b*dispScale, 0, 0, Math.PI*2);
-  ctxR.fill();
-  ctxR.restore();
-
-  // Ellipse border
-  ctxR.save();
-  ctxR.strokeStyle = '#FF8C42';
-  ctxR.lineWidth = 3;
-  ctxR.shadowColor = 'rgba(255,140,66,0.6)';
-  ctxR.shadowBlur = 10;
-  ctxR.beginPath();
-  ctxR.ellipse(e.cx*dispScale, e.cy*dispScale, e.a*dispScale, e.b*dispScale, 0, 0, Math.PI*2);
-  ctxR.stroke();
-  ctxR.restore();
-
-  // Points
-  points.forEach((p, i) => {
-    ctxR.save();
-    ctxR.beginPath();
-    ctxR.arc(p.x*dispScale, p.y*dispScale, 7, 0, Math.PI*2);
-    ctxR.fillStyle = POINT_COLORS[i];
-    ctxR.fill();
-    ctxR.strokeStyle = 'white';
-    ctxR.lineWidth = 2;
-    ctxR.stroke();
-    ctxR.restore();
-  });
-
-  const circ = ellipseCircumference(e.a, e.b);
-  document.getElementById('circumVal').innerHTML =
-    `${Math.round(circ)}<span class="result-unit">px</span>`;
-  document.getElementById('axisA').textContent = `${Math.round(e.a*2)} px`;
-  document.getElementById('axisB').textContent = `${Math.round(e.b*2)} px`;
-  document.getElementById('circumSub').textContent =
-    '楕円近似（ラマヌジャン公式）による推定値です';
-
-  // Reset scale UI
-  resetScaleUI();
-  showPhase('phaseResult');
-
-  // Set up reference canvas after phase is visible
-  setTimeout(() => initRefCanvas('canvasRef', refPoints, computeScaleFromCoin), 100);
-}
-
-// ===== Scale / cm conversion =====
-const COIN_CM = 2.4;
-let refPoints       = [];
-let refPointsCustom = [];
-let cmPerPx         = null;
-let scaleTab        = 'coin';
-
-function switchScaleTab(mode) {
-  scaleTab = mode;
-  ['coin','custom'].forEach(m => {
-    document.getElementById('tab' + m.charAt(0).toUpperCase() + m.slice(1))
-      .classList.toggle('active', m === mode);
-    document.getElementById('section' + m.charAt(0).toUpperCase() + m.slice(1))
-      .classList.toggle('active', m === mode);
-  });
-  if (mode === 'coin')   setTimeout(() => initRefCanvas('canvasRef',       refPoints,       computeScaleFromCoin),   50);
-  if (mode === 'custom') setTimeout(() => initRefCanvas('canvasRefCustom', refPointsCustom, computeScaleFromCustom), 50);
-}
-
-// ---- shared canvas init ----
-function initRefCanvas(canvasId, pts, onComplete) {
-  const cr = document.getElementById(canvasId);
-  if (!img || !cr) return;
-  const maxW = Math.min(580, window.innerWidth - 80);
-  const scale = Math.min(1, maxW / img.naturalWidth);
-  cr.width  = Math.round(img.naturalWidth  * scale);
-  cr.height = Math.round(img.naturalHeight * scale);
-  pts.length = 0;
-  renderRefCanvas(canvasId, pts, canvasId === 'canvasRef' ? 'refStatus' : 'refStatusCustom');
-
-  const handler = ev => {
-    if (pts.length >= 2) { pts.length = 0; }
-    const rect = cr.getBoundingClientRect();
-    pts.push({
-      x: (ev.clientX - rect.left) * (cr.width / rect.width),
-      y: (ev.clientY - rect.top)  * (cr.height / rect.height)
-    });
-    renderRefCanvas(canvasId, pts, canvasId === 'canvasRef' ? 'refStatus' : 'refStatusCustom');
-    if (pts.length === 2) onComplete();
-  };
-  const touchHandler = ev => {
-    ev.preventDefault();
-    if (pts.length >= 2) { pts.length = 0; }
-    const t = ev.changedTouches[0];
-    const rect = cr.getBoundingClientRect();
-    pts.push({
-      x: (t.clientX - rect.left) * (cr.width / rect.width),
-      y: (t.clientY - rect.top)  * (cr.height / rect.height)
-    });
-    renderRefCanvas(canvasId, pts, canvasId === 'canvasRef' ? 'refStatus' : 'refStatusCustom');
-    if (pts.length === 2) onComplete();
-  };
-  cr.onclick = handler;
-  cr.ontouchend = touchHandler;
-}
-
-function renderRefCanvas(canvasId, pts, statusId) {
-  const cr = document.getElementById(canvasId);
-  if (!cr || !img) return;
-  const c = cr.getContext('2d');
-  c.clearRect(0, 0, cr.width, cr.height);
-  c.drawImage(img, 0, 0, cr.width, cr.height);
-  pts.forEach((p, i) => {
-    c.save();
-    c.beginPath(); c.arc(p.x, p.y, 7, 0, Math.PI*2);
-    c.fillStyle = i===0 ? '#FF6B6B' : '#4D96FF';
-    c.fill(); c.strokeStyle = 'white'; c.lineWidth = 2; c.stroke();
-    c.restore();
-  });
-  if (pts.length === 2) {
-    c.save();
-    c.strokeStyle = '#FFD93D'; c.lineWidth = 2; c.setLineDash([5,4]);
-    c.beginPath(); c.moveTo(pts[0].x, pts[0].y); c.lineTo(pts[1].x, pts[1].y);
-    c.stroke(); c.restore();
-  }
-  const st = document.getElementById(statusId);
-  if (st) {
-    const label = canvasId === 'canvasRef' ? '500円玉' : '基準物';
-    if (pts.length === 0) st.textContent = `👆 ${label}の左端をタップ`;
-    else if (pts.length === 1) st.textContent = `👆 ${label}の右端をタップ`;
-  }
-}
-
-function pxDist(pts) {
-  const dx = pts[1].x - pts[0].x, dy = pts[1].y - pts[0].y;
-  return Math.sqrt(dx*dx + dy*dy);
-}
-
-function computeScaleFromCoin() {
-  cmPerPx = COIN_CM / pxDist(refPoints);
-  document.getElementById('refStatus').textContent =
+  cmPerPx=cm/imgPxDist;
+  document.getElementById('refStatus').textContent=
     `✅ 設定完了：1px ≈ ${cmPerPx.toFixed(4)} cm`;
-  showCmResult('500円玉基準');
+  showCmResult();
 }
 
-function computeScaleFromCustom() {
-  const cm = parseFloat(document.getElementById('customCmInput').value);
-  if (!cm || cm <= 0) {
-    alert('先に基準物のサイズを入力してください');
-    refPointsCustom.length = 0;
-    renderRefCanvas('canvasRefCustom', refPointsCustom, 'refStatusCustom');
-    return;
-  }
-  cmPerPx = cm / pxDist(refPointsCustom);
-  document.getElementById('refStatusCustom').textContent =
-    `✅ 設定完了：1px ≈ ${cmPerPx.toFixed(4)} cm`;
-  showCmResult(`カスタム基準（${cm}cm）`);
+function showCmResult() {
+  if(!cmPerPx) return;
+  const ell=computeEllipse(facePoints);
+  if(!ell) return;
+  const toC=px=>(px*cmPerPx).toFixed(1)+' cm';
+  const circ=ellipseCircum(ell.a,ell.b);
+  document.getElementById('cmCircum').textContent=toC(circ);
+  document.getElementById('cmWidth').textContent=toC(ell.a*2);
+  document.getElementById('cmHeight').textContent=toC(ell.b*2);
+  document.getElementById('cmGrid').classList.remove('hidden');
 }
 
-function showCmResult(note) {
-  if (!cmPerPx) return;
-  const e = computeEllipse(points);
-  if (!e) return;
-  const circ = ellipseCircumference(e.a, e.b);
-  const toC = px => (px * cmPerPx).toFixed(1) + ' cm';
-  document.getElementById('cmCircum').textContent = toC(circ);
-  document.getElementById('cmAxisA').textContent  = toC(e.a * 2);
-  document.getElementById('cmAxisB').textContent  = toC(e.b * 2);
-  document.getElementById('cmResultRow').classList.remove('hidden');
-  const noteEl = document.getElementById('cmNote');
-  if (noteEl) { noteEl.textContent = `※ ${note}`; noteEl.classList.remove('hidden'); }
-}
+// ============================================================
+//  Ref tab switching
+// ============================================================
+const REF_DESCS = {
+  coin500:`写真に写っている <strong>500円玉</strong>（直径 2.65 cm）の<br><strong>左端 → 右端</strong> の順に2点タップしてください`,
+  card_w: `写真に写っている <strong>クレジットカードの横辺</strong>（8.56 cm）の<br><strong>左端 → 右端</strong> の順に2点タップしてください`,
+  card_h: `写真に写っている <strong>クレジットカードの縦辺</strong>（5.40 cm）の<br><strong>上端 → 下端</strong> の順に2点タップしてください`,
+  custom: `基準物の実寸を入力してから、<br><strong>左端（または上端）→ 右端（または下端）</strong> の順に2点タップしてください`,
+};
 
-function resetScaleUI() {
-  cmPerPx = null;
-  refPoints.length = 0;
-  refPointsCustom.length = 0;
-  document.getElementById('cmResultRow').classList.add('hidden');
-  const noteEl = document.getElementById('cmNote');
-  if (noteEl) noteEl.classList.add('hidden');
-  // Reset to coin tab
-  scaleTab = 'coin';
-  document.getElementById('tabCoin').classList.add('active');
-  document.getElementById('tabCustom').classList.remove('active');
-  document.getElementById('sectionCoin').classList.add('active');
-  document.getElementById('sectionCustom').classList.remove('active');
-  const st = document.getElementById('refStatus');
-  if (st) st.textContent = '👆 500円玉の左端をタップ';
-  const st2 = document.getElementById('refStatusCustom');
-  if (st2) st2.textContent = '👆 基準物の左端をタップ';
-}
-
-// ===== Retry =====
-retryBtn.addEventListener('click', () => {
-  zoomScale = minZoom; zoomOffX = 0; zoomOffY = 0;
-  startMeasure();
+document.querySelectorAll('.ref-tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.ref-tab').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    refMode=btn.dataset.ref;
+    document.getElementById('customRow').classList.toggle('hidden', refMode!=='custom');
+    document.getElementById('refDesc').innerHTML=REF_DESCS[refMode];
+    // Reset ref points
+    cmPerPx=null; refPoints=[];
+    document.getElementById('cmGrid').classList.add('hidden');
+    document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
+    drawRefCanvas();
+  });
 });
 
-newPhotoBtn.addEventListener('click', () => {
-  imageDataURL = null;
-  img = null;
-  points = [];
-  fileInput.value = '';
-  showPhase('phaseUpload');
+// ============================================================
+//  Retry / new photo
+// ============================================================
+document.getElementById('retryBtn').addEventListener('click',()=>{
+  facePoints=[];
+  showPhase(2);
+  requestAnimationFrame(()=>{ fitImage(); redraw(); updateInstr(); });
+});
+document.getElementById('newPhotoBtn').addEventListener('click',()=>{
+  img=null; imgDataURL=null; facePoints=[];
+  fileInput.value='';
+  showPhase(1);
 });
 </script>
 </body>

@@ -343,38 +343,37 @@
     transform: none;
   }
 
-  /* Camera */
-  #videoWrap {
+  /* Canvas area – zoom対応 */
+  .canvas-wrap {
     position: relative;
+    overflow: hidden;
     background: #1a120d;
+    touch-action: none;
+    min-height: 200px;
     display: flex;
     justify-content: center;
-    padding: 16px 16px 0;
+    align-items: flex-start;
   }
 
-  #video {
-    max-width: 100%;
+  #canvas {
     border-radius: 8px;
+    cursor: crosshair;
     display: block;
+    transform-origin: 0 0;
+    /* スムーズなズーム */
+    will-change: transform;
   }
 
-  .camera-btn-row {
-    display: flex;
-    gap: 10px;
-    padding: 12px 24px 0;
-    justify-content: center;
-  }
-
-  /* Divider */
-  .divider {
+  /* zoom hint */
+  .zoom-hint {
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    font-size: 11px;
     text-align: center;
-    padding: 16px 24px 0;
-    font-size: 12px;
-    color: #c0a898;
-    font-weight: 300;
+    padding: 5px 10px;
+    letter-spacing: 0.03em;
   }
 
-  /* Tip */
   .tip {
     background: linear-gradient(135deg, #fff8f0, #fdf0e3);
     border-left: 3px solid var(--accent);
@@ -610,29 +609,14 @@
 
   <div class="card">
 
-    <!-- Phase 1: Upload / Camera -->
+    <!-- Phase 1: Upload -->
     <div id="phaseUpload">
       <div class="upload-area" id="dropZone">
         <div class="upload-icon">🐶</div>
-        <div class="upload-text">写真をドロップ or タップして選択</div>
+        <div class="upload-text">写真をタップして選択</div>
         <div class="upload-sub">JPG / PNG / WEBP 対応</div>
         <input type="file" id="fileInput" accept="image/*">
       </div>
-
-      <div class="divider">または</div>
-
-      <div class="camera-btn-row">
-        <button class="btn btn-secondary" id="cameraBtn">📷 カメラで撮影</button>
-      </div>
-
-      <div id="videoWrap" class="hidden">
-        <video id="video" autoplay playsinline></video>
-      </div>
-      <div class="camera-btn-row hidden" id="captureRow">
-        <button class="btn btn-primary" id="captureBtn">📸 撮影する</button>
-        <button class="btn btn-secondary" id="stopCameraBtn">✕ キャンセル</button>
-      </div>
-
       <div class="tip" style="margin-top:16px;">
         <strong>📌 ヒント：</strong>正面から撮った写真が最も精度よく計測できます。顔全体が写っているものを選びましょう。<br>実寸（cm）換算には <strong>500円玉を一緒に写す</strong> のがおすすめです 🪙
       </div>
@@ -640,7 +624,8 @@
 
     <!-- Phase 2: Mark points -->
     <div id="phasePoints" class="hidden">
-      <div class="canvas-wrap">
+      <div class="zoom-hint">🤏 ピンチで拡大縮小 ／ 2本指でスクロール ／ 指1本でタップして点を置く</div>
+      <div class="canvas-wrap" id="canvasWrap">
         <canvas id="canvas"></canvas>
       </div>
       <div class="point-guide">
@@ -653,8 +638,11 @@
         <span class="point-indicator">1</span> 顔の<strong>左端</strong>をタップしてください
       </div>
       <div class="btn-row">
-        <button class="btn btn-secondary" id="undoBtn" disabled>↩ 1つ戻る</button>
-        <button class="btn btn-secondary" id="resetPointsBtn">🔄 やり直し</button>
+        <button class="btn btn-secondary" id="zoomInBtn">🔍＋</button>
+        <button class="btn btn-secondary" id="zoomOutBtn">🔍－</button>
+        <button class="btn btn-secondary" id="zoomResetBtn">全体</button>
+        <button class="btn btn-secondary" id="undoBtn" disabled>↩ 戻る</button>
+        <button class="btn btn-secondary" id="resetPointsBtn">🔄 リセット</button>
       </div>
     </div>
 
@@ -756,40 +744,41 @@
 // ===== State =====
 let imageDataURL = null;
 let img = null;
-let points = []; // [left, right, top, bottom] → {x,y}
-let stream = null;
+let points = [];
 
 const POINT_LABELS = ['左端', '右端', '上端', '下端'];
 const POINT_COLORS = ['#FF6B6B', '#FFD93D', '#6BCB77', '#4D96FF'];
 const POINT_ICONS  = ['←', '→', '↑', '↓'];
 
+// ===== Zoom state =====
+let zoomScale = 1;
+let zoomOffX  = 0;
+let zoomOffY  = 0;
+let minZoom   = 1;
+const MAX_ZOOM = 8;
+
 // ===== Elements =====
-const dropZone     = document.getElementById('dropZone');
-const fileInput    = document.getElementById('fileInput');
-const cameraBtn    = document.getElementById('cameraBtn');
-const videoWrap    = document.getElementById('videoWrap');
-const video        = document.getElementById('video');
-const captureRow   = document.getElementById('captureRow');
-const captureBtn   = document.getElementById('captureBtn');
-const stopCameraBtn= document.getElementById('stopCameraBtn');
-const canvas       = document.getElementById('canvas');
-const ctx          = canvas.getContext('2d');
-const canvasResult = document.getElementById('canvasResult');
-const ctxR         = canvasResult.getContext('2d');
-const instruction  = document.getElementById('instruction');
-const undoBtn      = document.getElementById('undoBtn');
-const resetPointsBtn = document.getElementById('resetPointsBtn');
-const retryBtn     = document.getElementById('retryBtn');
-const newPhotoBtn  = document.getElementById('newPhotoBtn');
+const dropZone      = document.getElementById('dropZone');
+const fileInput     = document.getElementById('fileInput');
+const canvas        = document.getElementById('canvas');
+const ctx           = canvas.getContext('2d');
+const canvasWrap    = document.getElementById('canvasWrap');
+const canvasResult  = document.getElementById('canvasResult');
+const ctxR          = canvasResult.getContext('2d');
+const instruction   = document.getElementById('instruction');
+const undoBtn       = document.getElementById('undoBtn');
+const resetPointsBtn= document.getElementById('resetPointsBtn');
+const zoomInBtn     = document.getElementById('zoomInBtn');
+const zoomOutBtn    = document.getElementById('zoomOutBtn');
+const zoomResetBtn  = document.getElementById('zoomResetBtn');
+const retryBtn      = document.getElementById('retryBtn');
+const newPhotoBtn   = document.getElementById('newPhotoBtn');
 
 // ===== Phase switching =====
 function showPhase(phase) {
-  document.getElementById('phaseUpload').classList.add('hidden');
-  document.getElementById('phasePoints').classList.add('hidden');
-  document.getElementById('phaseResult').classList.add('hidden');
+  ['phaseUpload','phasePoints','phaseResult'].forEach(id =>
+    document.getElementById(id).classList.add('hidden'));
   document.getElementById(phase).classList.remove('hidden');
-
-  // Steps
   const s = { phaseUpload:1, phasePoints:2, phaseResult:3 }[phase];
   ['step1','step2','step3'].forEach((id, i) => {
     const el = document.getElementById(id);
@@ -804,10 +793,8 @@ dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
 dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file) loadFile(file);
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
 });
 fileInput.addEventListener('change', () => { if (fileInput.files[0]) loadFile(fileInput.files[0]); });
 
@@ -817,49 +804,20 @@ function loadFile(file) {
   reader.readAsDataURL(file);
 }
 
-// ===== Camera =====
-cameraBtn.addEventListener('click', async () => {
-  try {
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    video.srcObject = stream;
-    videoWrap.classList.remove('hidden');
-    captureRow.classList.remove('hidden');
-    cameraBtn.classList.add('hidden');
-  } catch(e) {
-    alert('カメラにアクセスできませんでした。');
-  }
-});
-
-captureBtn.addEventListener('click', () => {
-  const tmp = document.createElement('canvas');
-  tmp.width = video.videoWidth;
-  tmp.height = video.videoHeight;
-  tmp.getContext('2d').drawImage(video, 0, 0);
-  imageDataURL = tmp.toDataURL('image/jpeg');
-  stopCamera();
-  startMeasure();
-});
-
-stopCameraBtn.addEventListener('click', stopCamera);
-
-function stopCamera() {
-  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-  videoWrap.classList.add('hidden');
-  captureRow.classList.add('hidden');
-  cameraBtn.classList.remove('hidden');
-}
-
 // ===== Measure phase =====
 function startMeasure() {
   points = [];
   img = new Image();
   img.onload = () => {
-    // Fit to max 640px wide
-    const maxW = Math.min(640, window.innerWidth - 32);
-    const scale = Math.min(1, maxW / img.naturalWidth);
-    canvas.width  = Math.round(img.naturalWidth  * scale);
-    canvas.height = Math.round(img.naturalHeight * scale);
-    canvas.dataset.scale = scale;
+    // フル解像度でcanvasを作る（ズームのために大きめに）
+    canvas.width  = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    // 初期表示サイズをwrapに合わせてzoomScaleを設定
+    const wrapW = canvasWrap.clientWidth || window.innerWidth - 32;
+    minZoom = Math.min(1, wrapW / img.naturalWidth);
+    zoomScale = minZoom;
+    zoomOffX = 0; zoomOffY = 0;
+    applyZoom();
     drawCanvas();
     showPhase('phasePoints');
     updateInstruction();
@@ -867,18 +825,134 @@ function startMeasure() {
   img.src = imageDataURL;
 }
 
+// ===== Zoom =====
+function applyZoom() {
+  canvas.style.transform = `scale(${zoomScale})`;
+  canvas.style.transformOrigin = '0 0';
+  canvas.style.marginLeft = zoomOffX + 'px';
+  canvas.style.marginTop  = zoomOffY + 'px';
+  // wrapの高さをcanvasの表示高さに合わせる
+  canvasWrap.style.height = Math.round(canvas.height * zoomScale) + 'px';
+}
+
+function clampOffset() {
+  const dispW = canvas.width  * zoomScale;
+  const dispH = canvas.height * zoomScale;
+  const wrapW = canvasWrap.clientWidth;
+  const wrapH = canvasWrap.clientHeight;
+  zoomOffX = Math.min(0, Math.max(wrapW - dispW, zoomOffX));
+  zoomOffY = Math.min(0, Math.max(wrapH - dispH, zoomOffY));
+}
+
+function zoomAt(cx, cy, newScale) {
+  newScale = Math.min(MAX_ZOOM, Math.max(minZoom, newScale));
+  // cx, cy はwrap座標
+  const ratio = newScale / zoomScale;
+  zoomOffX = cx - ratio * (cx - zoomOffX);
+  zoomOffY = cy - ratio * (cy - zoomOffY);
+  zoomScale = newScale;
+  clampOffset();
+  applyZoom();
+}
+
+zoomInBtn.addEventListener('click',    () => zoomAt(canvasWrap.clientWidth/2, canvasWrap.clientHeight/2, zoomScale * 1.5));
+zoomOutBtn.addEventListener('click',   () => zoomAt(canvasWrap.clientWidth/2, canvasWrap.clientHeight/2, zoomScale / 1.5));
+zoomResetBtn.addEventListener('click', () => {
+  zoomScale = minZoom; zoomOffX = 0; zoomOffY = 0; applyZoom();
+});
+
+// ===== Pinch & pan =====
+let lastTouches = null;
+let isPinching  = false;
+
+canvasWrap.addEventListener('touchstart', e => {
+  lastTouches = e.touches;
+  isPinching = e.touches.length >= 2;
+}, { passive: true });
+
+canvasWrap.addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    isPinching = true;
+    const t0 = e.touches[0], t1 = e.touches[1];
+    const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+    const rect  = canvasWrap.getBoundingClientRect();
+    const midX  = ((t0.clientX + t1.clientX) / 2) - rect.left;
+    const midY  = ((t0.clientY + t1.clientY) / 2) - rect.top;
+
+    if (lastTouches && lastTouches.length === 2) {
+      const l0 = lastTouches[0], l1 = lastTouches[1];
+      const lastDist = Math.hypot(l0.clientX - l1.clientX, l0.clientY - l1.clientY);
+      if (lastDist > 0) zoomAt(midX, midY, zoomScale * dist / lastDist);
+    }
+    lastTouches = e.touches;
+  } else if (e.touches.length === 1 && !isPinching) {
+    // 1本指スクロール（ズーム中のみ）
+    if (zoomScale > minZoom) {
+      e.preventDefault();
+      const t = e.touches[0];
+      if (lastTouches && lastTouches.length === 1) {
+        zoomOffX += t.clientX - lastTouches[0].clientX;
+        zoomOffY += t.clientY - lastTouches[0].clientY;
+        clampOffset(); applyZoom();
+      }
+      lastTouches = e.touches;
+    }
+  }
+}, { passive: false });
+
+canvasWrap.addEventListener('touchend', e => {
+  if (e.touches.length < 2) isPinching = false;
+  lastTouches = e.touches;
+});
+
+// ===== Tap to place point =====
+// wrap座標 → canvas画像座標に変換
+function wrapToCanvas(wx, wy) {
+  return {
+    x: (wx - zoomOffX) / zoomScale,
+    y: (wy - zoomOffY) / zoomScale
+  };
+}
+
+canvasWrap.addEventListener('touchend', e => {
+  if (isPinching || e.changedTouches.length !== 1) return;
+  if (points.length >= 4) return;
+  const t = e.changedTouches[0];
+  const rect = canvasWrap.getBoundingClientRect();
+  const wx = t.clientX - rect.left;
+  const wy = t.clientY - rect.top;
+  const p = wrapToCanvas(wx, wy);
+  if (p.x < 0 || p.y < 0 || p.x > canvas.width || p.y > canvas.height) return;
+  points.push(p);
+  undoBtn.disabled = false;
+  drawCanvas();
+  updateInstruction();
+}, { passive: true });
+
+canvasWrap.addEventListener('click', e => {
+  // マウス用
+  if (points.length >= 4) return;
+  const rect = canvasWrap.getBoundingClientRect();
+  const p = wrapToCanvas(e.clientX - rect.left, e.clientY - rect.top);
+  if (p.x < 0 || p.y < 0 || p.x > canvas.width || p.y > canvas.height) return;
+  points.push(p);
+  undoBtn.disabled = false;
+  drawCanvas();
+  updateInstruction();
+});
+
 function drawCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+  ctx.drawImage(img, 0, 0);
 
-  // Draw ellipse preview if ≥ 3 points
   if (points.length >= 3) {
     const e = computeEllipse(points);
     if (e) {
       ctx.save();
-      ctx.strokeStyle = 'rgba(255,255,255,0.6)';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6,4]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx.lineWidth = Math.max(2, 4 / zoomScale);
+      ctx.setLineDash([8, 5]);
       ctx.beginPath();
       ctx.ellipse(e.cx, e.cy, e.a, e.b, 0, 0, Math.PI*2);
       ctx.stroke();
@@ -886,23 +960,23 @@ function drawCanvas() {
     }
   }
 
-  // Draw points
+  const dotR = Math.max(8, 16 / zoomScale);
   points.forEach((p, i) => {
     ctx.save();
     ctx.beginPath();
-    ctx.arc(p.x, p.y, 8, 0, Math.PI*2);
+    ctx.arc(p.x, p.y, dotR, 0, Math.PI*2);
     ctx.fillStyle = POINT_COLORS[i];
     ctx.fill();
     ctx.strokeStyle = 'white';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = Math.max(2, 3 / zoomScale);
     ctx.stroke();
     ctx.restore();
 
     ctx.save();
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = `bold ${Math.max(12, 18 / zoomScale)}px sans-serif`;
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.fillText(POINT_ICONS[i], p.x, p.y + 4);
+    ctx.fillText(POINT_ICONS[i], p.x, p.y + dotR * 0.4);
     ctx.restore();
   });
 }
@@ -917,46 +991,15 @@ function updateInstruction() {
   instruction.innerHTML = `<span class="point-indicator">${i+1}</span> 顔の<strong>${POINT_LABELS[i]}</strong>をタップしてください`;
 }
 
-canvas.addEventListener('click', e => {
-  if (points.length >= 4) return;
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width  / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const x = (e.clientX - rect.left)  * scaleX;
-  const y = (e.clientY - rect.top)   * scaleY;
-  points.push({ x, y });
-  undoBtn.disabled = false;
-  drawCanvas();
-  updateInstruction();
-});
-
-canvas.addEventListener('touchend', e => {
-  if (points.length >= 4) return;
-  e.preventDefault();
-  const touch = e.changedTouches[0];
-  const rect = canvas.getBoundingClientRect();
-  const scaleX = canvas.width  / rect.width;
-  const scaleY = canvas.height / rect.height;
-  const x = (touch.clientX - rect.left) * scaleX;
-  const y = (touch.clientY - rect.top)  * scaleY;
-  points.push({ x, y });
-  undoBtn.disabled = false;
-  drawCanvas();
-  updateInstruction();
-}, { passive: false });
-
 undoBtn.addEventListener('click', () => {
   points.pop();
   undoBtn.disabled = points.length === 0;
-  drawCanvas();
-  updateInstruction();
+  drawCanvas(); updateInstruction();
 });
 
 resetPointsBtn.addEventListener('click', () => {
-  points = [];
-  undoBtn.disabled = true;
-  drawCanvas();
-  updateInstruction();
+  points = []; undoBtn.disabled = true;
+  drawCanvas(); updateInstruction();
 });
 
 // ===== Ellipse computation =====
@@ -988,19 +1031,19 @@ function showResult() {
   const e = computeEllipse(points);
   if (!e) return;
 
-  // Mirror to result canvas
+  // Mirror to result canvas（フル解像度から表示用にスケール）
   const maxW = Math.min(640, window.innerWidth - 32);
-  const scale = Math.min(1, maxW / img.naturalWidth);
-  canvasResult.width  = Math.round(img.naturalWidth  * scale);
-  canvasResult.height = Math.round(img.naturalHeight * scale);
+  const dispScale = Math.min(1, maxW / img.naturalWidth);
+  canvasResult.width  = Math.round(img.naturalWidth  * dispScale);
+  canvasResult.height = Math.round(img.naturalHeight * dispScale);
   ctxR.drawImage(img, 0, 0, canvasResult.width, canvasResult.height);
 
-  // Draw filled ellipse overlay
+  // Draw filled ellipse overlay（dispScaleで縮小）
   ctxR.save();
   ctxR.globalAlpha = 0.18;
   ctxR.fillStyle = '#FFB347';
   ctxR.beginPath();
-  ctxR.ellipse(e.cx, e.cy, e.a, e.b, 0, 0, Math.PI*2);
+  ctxR.ellipse(e.cx*dispScale, e.cy*dispScale, e.a*dispScale, e.b*dispScale, 0, 0, Math.PI*2);
   ctxR.fill();
   ctxR.restore();
 
@@ -1011,7 +1054,7 @@ function showResult() {
   ctxR.shadowColor = 'rgba(255,140,66,0.6)';
   ctxR.shadowBlur = 10;
   ctxR.beginPath();
-  ctxR.ellipse(e.cx, e.cy, e.a, e.b, 0, 0, Math.PI*2);
+  ctxR.ellipse(e.cx*dispScale, e.cy*dispScale, e.a*dispScale, e.b*dispScale, 0, 0, Math.PI*2);
   ctxR.stroke();
   ctxR.restore();
 
@@ -1019,7 +1062,7 @@ function showResult() {
   points.forEach((p, i) => {
     ctxR.save();
     ctxR.beginPath();
-    ctxR.arc(p.x, p.y, 7, 0, Math.PI*2);
+    ctxR.arc(p.x*dispScale, p.y*dispScale, 7, 0, Math.PI*2);
     ctxR.fillStyle = POINT_COLORS[i];
     ctxR.fill();
     ctxR.strokeStyle = 'white';
@@ -1188,6 +1231,7 @@ function resetScaleUI() {
 
 // ===== Retry =====
 retryBtn.addEventListener('click', () => {
+  zoomScale = minZoom; zoomOffX = 0; zoomOffY = 0;
   startMeasure();
 });
 

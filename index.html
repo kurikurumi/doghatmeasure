@@ -5,127 +5,88 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>わんこ顔測定器 by くりくるみ</title>
 <style>
-:root {
-  --cream: #FDF6EC;
-  --warm:  #F5E6CC;
-  --paw:   #D4845A;
-  --dark:  #A85C35;
-  --accent:#E8A87C;
-  --green: #7BAE7F;
-  --text:  #3D2B1F;
-  --shadow:rgba(61,43,31,0.15);
+:root{
+  --cream:#FDF6EC;--warm:#F5E6CC;--paw:#D4845A;--dark:#A85C35;
+  --accent:#E8A87C;--green:#7BAE7F;--text:#3D2B1F;--shadow:rgba(61,43,31,0.15);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{
-  font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;
+body{font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;
   background:var(--cream);min-height:100vh;color:var(--text);
-  -webkit-text-size-adjust:100%;overscroll-behavior:none;
-}
+  -webkit-text-size-adjust:100%;overscroll-behavior:none;}
 
-/* ---- Header ---- */
-.header{
-  text-align:center;padding:18px 16px 14px;
-  background:#fff;border-bottom:1px solid var(--warm);
-  position:sticky;top:0;z-index:200;
-}
+/* Header */
+.header{text-align:center;padding:16px 16px 12px;background:#fff;
+  border-bottom:1px solid var(--warm);position:sticky;top:0;z-index:200;}
 .logo{font-size:clamp(20px,5.5vw,30px);font-weight:900;color:var(--dark);}
 .logo span{color:var(--paw);}
 .subtitle{font-size:11px;color:#8a6a55;margin-top:3px;}
 
-/* ---- Steps ---- */
-.steps{
-  display:flex;justify-content:center;align-items:center;
-  padding:10px 16px;background:var(--cream);
-}
+/* Steps */
+.steps{display:flex;justify-content:center;align-items:center;
+  padding:10px 16px;background:var(--cream);}
 .step{display:flex;align-items:center;gap:5px;font-size:11px;color:#b09080;}
 .step.active{color:var(--dark);font-weight:700;}
 .step.done{color:var(--green);}
-.step-num{
-  width:20px;height:20px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;font-weight:700;background:var(--warm);color:#b09080;
-  transition:all .3s;
-}
+.step-num{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:10px;font-weight:700;background:var(--warm);
+  color:#b09080;transition:all .3s;}
 .step.active .step-num{background:var(--paw);color:#fff;}
 .step.done  .step-num{background:var(--green);color:#fff;}
 .step-sep{width:18px;height:1px;background:var(--warm);margin:0 3px;}
 
-/* ---- Card ---- */
-.card{
-  background:#fff;border-radius:16px;
-  margin:0 12px 16px;box-shadow:0 2px 16px var(--shadow);overflow:hidden;
-}
+/* Card */
+.card{background:#fff;border-radius:16px;margin:0 12px 16px;
+  box-shadow:0 2px 16px var(--shadow);overflow:hidden;}
 
-/* ---- Phase 1: Upload ---- */
-.upload-area{
-  padding:40px 24px;text-align:center;
-  border:2.5px dashed var(--accent);margin:20px;border-radius:14px;
-  cursor:pointer;background:var(--cream);transition:background .2s;
-  -webkit-tap-highlight-color:transparent;
-}
-.upload-area:active{background:var(--warm);}
-.upload-icon{font-size:54px;margin-bottom:14px;}
-.upload-text{font-size:16px;color:var(--dark);font-weight:700;margin-bottom:6px;}
-.upload-sub{font-size:12px;color:#b09080;}
-#fileInput{display:none;}
+/* Upload */
+.upload-inner{padding:28px 24px 24px;text-align:center;}
+.upload-icon{font-size:52px;margin-bottom:12px;}
+.upload-text{font-size:16px;color:var(--dark);font-weight:700;margin-bottom:18px;}
+.upload-btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-cam{background:var(--paw);color:#fff;box-shadow:0 3px 12px rgba(212,132,90,.4);}
+.btn-lib{background:var(--warm);color:var(--dark);}
+.upload-note{font-size:11px;color:#b09080;margin-top:12px;line-height:1.6;}
 
-.tip{
-  background:#fff8f0;border-left:3px solid var(--accent);
+.tip{background:#fff8f0;border-left:3px solid var(--accent);
   margin:0 20px 20px;padding:12px 14px;border-radius:0 10px 10px 0;
-  font-size:12px;color:#7a5a45;line-height:1.75;
-}
+  font-size:12px;color:#7a5a45;line-height:1.75;}
 .tip strong{color:var(--dark);}
 
-/* ---- Phase 2: Canvas ---- */
-.instr-bar{
-  background:var(--paw);color:#fff;
-  text-align:center;padding:11px 16px;font-size:13px;font-weight:600;
-  display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;
-}
-.instr-badge{
-  background:rgba(255,255,255,.28);border-radius:50%;
-  width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:800;flex-shrink:0;
-}
+/* Phase 2 canvas */
+.instr-bar{background:var(--paw);color:#fff;text-align:center;padding:11px 16px;
+  font-size:13px;font-weight:600;display:flex;align-items:center;
+  justify-content:center;gap:8px;min-height:44px;}
+.instr-badge{background:rgba(255,255,255,.28);border-radius:50%;width:22px;height:22px;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;flex-shrink:0;}
 
-#canvasWrap{
-  position:relative;width:100%;height:55vh;min-height:240px;
-  background:#1a120d;overflow:hidden;touch-action:none;user-select:none;
-}
-#mainCanvas{display:block;width:100%;height:100%;cursor:crosshair;}
+#canvasWrap{position:relative;width:100%;
+  height:min(55vh,480px);min-height:240px;
+  background:#1a120d;overflow:hidden;touch-action:none;user-select:none;}
+#mainCanvas{display:block;width:100%;height:100%;cursor:crosshair;
+  image-rendering:auto;}
 
-.legend{
-  display:flex;justify-content:center;gap:14px;
-  padding:8px 16px;background:#1a120d;flex-wrap:wrap;
-}
+.legend{display:flex;justify-content:center;gap:14px;
+  padding:8px 16px;background:#1a120d;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#ddc9b8;}
 .legend-dot{width:10px;height:10px;border-radius:50%;}
+.zoom-hint{text-align:center;font-size:10px;color:#cdb9a8;
+  background:#1a120d;padding:3px 16px 8px;}
 
-.zoom-hint{
-  text-align:center;font-size:10px;color:#cdb9a8;
-  background:#1a120d;padding:3px 16px 8px;
-}
-
-.btn-row{
-  display:flex;gap:8px;padding:12px 14px;
-  justify-content:center;flex-wrap:wrap;
-}
-.btn{
-  padding:9px 16px;border-radius:30px;border:none;
-  font-size:12px;font-weight:600;cursor:pointer;
-  transition:transform .12s;-webkit-tap-highlight-color:transparent;
-  letter-spacing:.02em;font-family:inherit;
-}
+/* Buttons */
+.btn-row{display:flex;gap:8px;padding:12px 14px;justify-content:center;flex-wrap:wrap;}
+.btn{padding:9px 16px;border-radius:30px;border:none;font-size:12px;font-weight:600;
+  cursor:pointer;transition:transform .12s;-webkit-tap-highlight-color:transparent;
+  letter-spacing:.02em;font-family:inherit;}
 .btn:active{transform:scale(.94);}
 .btn:disabled{opacity:.35;pointer-events:none;}
 .btn-primary{background:var(--paw);color:#fff;box-shadow:0 3px 12px rgba(212,132,90,.35);}
 .btn-sub{background:var(--warm);color:var(--dark);}
 .btn-ghost{background:#fff;border:1.5px solid var(--warm);color:var(--dark);}
 
-/* ---- Phase 3: Result ---- */
+/* Phase 3 */
 #resultWrap{background:#1a120d;display:flex;justify-content:center;}
 #resultCanvas{max-width:100%;max-height:38vh;display:block;}
-
 .res-panel{padding:18px 20px 0;text-align:center;}
 .res-label{font-size:11px;color:#b09080;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;}
 .res-big{font-size:clamp(38px,11vw,60px);font-weight:900;color:var(--dark);line-height:1;}
@@ -133,60 +94,51 @@ body{
 .res-note{font-size:11px;color:#b09080;margin-top:5px;}
 .res-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
 .res-box{background:var(--cream);border-radius:10px;padding:10px;}
-.res-box .rb-label{font-size:10px;color:#b09080;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;}
+.res-box .rb-label{font-size:10px;color:#b09080;letter-spacing:.06em;
+  text-transform:uppercase;margin-bottom:3px;}
 .res-box .rb-val{font-size:16px;font-weight:700;color:var(--dark);}
 
-/* ---- Scale panel ---- */
-.scale-panel{
-  margin:14px 20px;background:#fff8f0;
-  border:1.5px solid var(--accent);border-radius:14px;padding:14px;
-}
-.scale-title{font-size:12px;font-weight:700;color:var(--dark);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+/* Scale panel */
+.scale-panel{margin:14px 20px;background:#fff8f0;
+  border:1.5px solid var(--accent);border-radius:14px;padding:14px;}
+.scale-title{font-size:12px;font-weight:700;color:var(--dark);
+  margin-bottom:12px;display:flex;align-items:center;gap:6px;}
 .ref-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:12px;}
-.ref-tab{
-  padding:7px 2px;border:1.5px solid var(--warm);border-radius:8px;
-  background:#fff;font-size:10px;color:#8a6a55;
-  cursor:pointer;text-align:center;line-height:1.5;
-  -webkit-tap-highlight-color:transparent;transition:all .15s;font-family:inherit;
-}
+.ref-tab{padding:7px 2px;border:1.5px solid var(--warm);border-radius:8px;
+  background:#fff;font-size:10px;color:#8a6a55;cursor:pointer;text-align:center;
+  line-height:1.5;-webkit-tap-highlight-color:transparent;
+  transition:all .15s;font-family:inherit;}
 .ref-tab.active{border-color:var(--paw);background:#fff0e6;color:var(--dark);font-weight:700;}
 .ref-tab:active{transform:scale(.94);}
-
-.ref-desc{
-  font-size:11px;color:#7a5a45;margin-bottom:10px;line-height:1.7;
-  background:#fff;border-radius:8px;padding:9px 11px;
-}
+.ref-desc{font-size:11px;color:#7a5a45;margin-bottom:10px;line-height:1.7;
+  background:#fff;border-radius:8px;padding:9px 11px;}
 .custom-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
 .custom-row label{font-size:12px;color:#7a5a45;white-space:nowrap;}
-.ref-input{
-  flex:1;padding:8px 10px;border:1.5px solid var(--warm);border-radius:8px;
+.ref-input{flex:1;padding:8px 10px;border:1.5px solid var(--warm);border-radius:8px;
   font-size:14px;font-family:inherit;color:var(--text);background:#fff;
-  outline:none;-webkit-appearance:none;
-}
+  outline:none;-webkit-appearance:none;}
 .ref-input:focus{border-color:var(--paw);}
 .ref-unit{font-size:12px;color:#7a5a45;}
-
 #refCanvasWrap{background:#1a120d;border-radius:8px;overflow:hidden;margin-bottom:8px;}
 #refCanvas{display:block;max-width:100%;cursor:crosshair;}
-.ref-status{font-size:11px;color:var(--dark);font-weight:600;text-align:center;min-height:16px;}
-
+.ref-status{font-size:11px;color:var(--dark);font-weight:600;
+  text-align:center;min-height:16px;}
 .cm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:12px;}
-.cm-box{background:#fff;border:1px solid var(--warm);border-radius:8px;padding:8px 4px;text-align:center;}
+.cm-box{background:#fff;border:1px solid var(--warm);border-radius:8px;
+  padding:8px 4px;text-align:center;}
 .cm-box.hl{border-color:var(--paw);background:#fff5ee;}
-.cm-box .cm-label{font-size:9px;color:#b09080;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.cm-box .cm-label{font-size:9px;color:#b09080;text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:3px;}
 .cm-box .cm-val{font-size:14px;font-weight:700;color:var(--dark);}
 .cm-box.hl .cm-val{font-size:17px;}
 
-/* ---- Footer ---- */
+/* Footer */
 .footer{text-align:center;padding:20px 16px 48px;}
 .footer-sub{font-size:11px;color:#b09080;margin-bottom:10px;}
-.footer-btn{
-  display:inline-block;background:var(--paw);color:#fff;text-decoration:none;
+.footer-btn{display:inline-block;background:var(--paw);color:#fff;text-decoration:none;
   padding:11px 26px;border-radius:30px;font-size:13px;font-weight:700;
-  box-shadow:0 4px 16px rgba(212,132,90,.35);
-}
+  box-shadow:0 4px 16px rgba(212,132,90,.35);}
 .footer-copy{font-size:10px;color:#c0a898;margin-top:12px;}
-
 .hidden{display:none!important;}
 </style>
 </head>
@@ -197,7 +149,7 @@ body{
   <div class="subtitle">by くりくるみ｜犬の顔まわりのサイズを測定します</div>
 </div>
 
-<div class="steps" id="stepsBar">
+<div class="steps">
   <div class="step active" id="s1"><div class="step-num">1</div>&nbsp;写真選択</div>
   <div class="step-sep"></div>
   <div class="step" id="s2"><div class="step-num">2</div>&nbsp;4点指定</div>
@@ -205,27 +157,35 @@ body{
   <div class="step" id="s3"><div class="step-num">3</div>&nbsp;計測結果</div>
 </div>
 
-<!-- ===== Phase 1 ===== -->
+<!-- Phase 1 -->
 <div id="phase1">
   <div class="card">
-    <div class="upload-area" id="dropZone">
+    <div class="upload-inner">
       <div class="upload-icon">🐶</div>
-      <div class="upload-text">写真をタップして選択</div>
-      <div class="upload-sub">カメラまたはフォトライブラリから</div>
-      <input type="file" id="fileInput" accept="image/*">
+      <div class="upload-text">わんこの写真を選んでください</div>
+      <div class="upload-btn-row">
+        <button class="btn btn-cam" id="btnCamera">📷 カメラで撮る</button>
+        <button class="btn btn-lib" id="btnLibrary">🖼 アルバムから選ぶ</button>
+      </div>
+      <div class="upload-note">
+        iPhoneは「フォトライブラリ」を選択してください<br>
+        JPG / PNG / HEIC 対応
+      </div>
+      <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+      <input type="file" id="libInput"    accept="image/*" style="display:none">
     </div>
   </div>
   <div class="card">
     <div class="tip" style="margin:16px;">
       <strong>📌 撮影のポイント</strong><br>
-      ① 正面から、顔全体が入るように撮影してください<br>
-      ② <strong>500円玉・クレジットカード</strong>を一緒に写すと実寸（cm）を算出できます 🪙<br>
-      ③ 明るい場所 ＆ ピントを合わせると精度が上がります
+      ① 正面から、顔全体が入るように撮影<br>
+      ② <strong>500円玉またはクレジットカード</strong>を一緒に写すと実寸（cm）を算出できます 🪙<br>
+      ③ 明るい場所でピントを合わせると精度アップ
     </div>
   </div>
 </div>
 
-<!-- ===== Phase 2 ===== -->
+<!-- Phase 2 -->
 <div id="phase2" class="hidden">
   <div class="card">
     <div class="instr-bar" id="instrBar">
@@ -251,15 +211,14 @@ body{
   </div>
 </div>
 
-<!-- ===== Phase 3 ===== -->
+<!-- Phase 3 -->
 <div id="phase3" class="hidden">
   <div class="card">
     <div id="resultWrap"><canvas id="resultCanvas"></canvas></div>
-
     <div class="res-panel">
       <div class="res-label">顔まわり 推定サイズ</div>
       <div class="res-big" id="circumPx">—<span class="res-unit"> px</span></div>
-      <div class="res-note">楕円近似（ラマヌジャン公式）による推定値です</div>
+      <div class="res-note">楕円近似（ラマヌジャン公式）による推定値</div>
       <div class="res-grid">
         <div class="res-box">
           <div class="rb-label">横幅（左端〜右端）</div>
@@ -271,7 +230,6 @@ body{
         </div>
       </div>
     </div>
-
     <div class="scale-panel">
       <div class="scale-title">📐 実寸（cm）に換算する</div>
       <div class="ref-tabs">
@@ -280,21 +238,17 @@ body{
         <button class="ref-tab" data-ref="card_h">💳<br>カード縦</button>
         <button class="ref-tab" data-ref="custom">✏️<br>カスタム</button>
       </div>
-
       <div class="custom-row hidden" id="customRow">
         <label>基準サイズ：</label>
         <input class="ref-input" type="number" id="customCm" placeholder="例: 8.56" min="0.5" max="100" step="0.01">
         <span class="ref-unit">cm</span>
       </div>
-
       <div class="ref-desc" id="refDesc">
         写真に写っている <strong>500円玉</strong>（直径 2.65 cm）の<br>
         <strong>左端 → 右端</strong> の順に2点タップしてください
       </div>
-
       <div id="refCanvasWrap"><canvas id="refCanvas"></canvas></div>
       <div class="ref-status" id="refStatus">👆 基準物の左端をタップ</div>
-
       <div class="cm-grid hidden" id="cmGrid">
         <div class="cm-box">
           <div class="cm-label">横幅</div>
@@ -310,7 +264,6 @@ body{
         </div>
       </div>
     </div>
-
     <div class="btn-row">
       <button class="btn btn-primary" id="retryBtn">🔄 やり直す</button>
       <button class="btn btn-sub" id="newPhotoBtn">📷 別の写真</button>
@@ -329,577 +282,514 @@ body{
 <script>
 'use strict';
 
-// ============================================================
-//  State
-// ============================================================
-let img = null;
-let imgDataURL = null;
-let facePoints = [];   // [{x,y}] in image-pixel coordinates
+// ── State ──────────────────────────────────────────────────
+let img = null, imgDataURL = null;
+let facePoints = [];   // {x,y} in image-pixel coords
+let resultTimer = null;
+let DPR = 1;
 
 const COLORS = ['#FF6B6B','#FFD93D','#6BCB77','#4D96FF'];
 const LABELS = ['左端','右端','上端','下端'];
 
-// View transform:  canvas_px = img_px * scale + offset
+// View transform:  canvasPx = imgPx * scale + offset
 let view = { x:0, y:0, scale:1, minScale:0.1 };
 
-// Touch state machine
-// States: 'idle' | 'maybe-tap' | 'panning' | 'pinching'
+// Touch state machine: 'idle' | 'maybe-tap' | 'panning' | 'pinching'
 let tState = 'idle';
-let tStart = null;   // {cx, cy, vx, vy}  canvas pos + view at touchstart
-let pinch  = null;   // {dist, midCx, midCy, scale0, vx0, vy0}
+let tStart = null;        // {cx,cy,vx,vy}  – canvas px + view snapshot
+let tStartClient = null;  // {x,y}          – client px (threshold check)
+let pinch  = null;        // {dist0,midCx,midCy,scale0,vx0,vy0}
 
 // Reference calibration
+let refMode   = 'coin500';
+let refPoints = [];  // {x,y} in refCanvas px coords
+let cmPerPx   = null;
+
 const REF_DEFS = {
-  coin500: { label:'500円玉',              cm: 2.65 },
-  card_w:  { label:'クレジットカード（横）', cm: 8.56 },
-  card_h:  { label:'クレジットカード（縦）', cm: 5.40 },
-  custom:  { label:'カスタム',              cm: 0    },
+  coin500:{ cm:2.65 },
+  card_w: { cm:8.56 },
+  card_h: { cm:5.40 },
+  custom: { cm:0 },
 };
-let refMode = 'coin500';
-let refPoints = [];   // [{x,y}] in image-pixel coordinates (max 2)
-let cmPerPx = null;
+const REF_DESCS = {
+  coin500:`写真に写っている <strong>500円玉</strong>（直径 2.65 cm）の<br><strong>左端 → 右端</strong> の順に2点タップ`,
+  card_w: `写真に写っている <strong>クレジットカードの長辺</strong>（8.56 cm）の<br><strong>左端 → 右端</strong> の順に2点タップ`,
+  card_h: `写真に写っている <strong>クレジットカードの短辺</strong>（5.40 cm）の<br><strong>上端 → 下端</strong> の順に2点タップ`,
+  custom: `基準物のサイズを入力してから、<br><strong>一端 → 他端</strong> の順に2点タップしてください`,
+};
 
-// ============================================================
-//  Elements
-// ============================================================
-const mainCanvas  = document.getElementById('mainCanvas');
-const ctx         = mainCanvas.getContext('2d');
-const resultCanvas= document.getElementById('resultCanvas');
-const rCtx        = resultCanvas.getContext('2d');
-const refCanvas   = document.getElementById('refCanvas');
-const refCtx      = refCanvas.getContext('2d');
+// ── Elements ───────────────────────────────────────────────
+const mainCanvas   = document.getElementById('mainCanvas');
+const ctx          = mainCanvas.getContext('2d');
+const resultCanvas = document.getElementById('resultCanvas');
+const rCtx         = resultCanvas.getContext('2d');
+const refCanvas    = document.getElementById('refCanvas');
+const refCtx       = refCanvas.getContext('2d');
 
-// ============================================================
-//  Phase navigation
-// ============================================================
+// ── Phase navigation ───────────────────────────────────────
 function showPhase(n) {
-  ['phase1','phase2','phase3'].forEach((id,i)=>{
-    document.getElementById(id).classList.toggle('hidden', i+1!==n);
-  });
-  ['s1','s2','s3'].forEach((id,i)=>{
-    const el=document.getElementById(id);
+  ['phase1','phase2','phase3'].forEach((id,i) =>
+    document.getElementById(id).classList.toggle('hidden', i+1 !== n));
+  ['s1','s2','s3'].forEach((id,i) => {
+    const el = document.getElementById(id);
     el.classList.remove('active','done');
-    if(i+1<n) el.classList.add('done');
-    else if(i+1===n) el.classList.add('active');
+    if (i+1 < n) el.classList.add('done');
+    else if (i+1 === n) el.classList.add('active');
   });
 }
 
-// ============================================================
-//  Upload
-// ============================================================
-const dropZone  = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
+// ── Upload ─────────────────────────────────────────────────
+const cameraInput = document.getElementById('cameraInput');
+const libInput    = document.getElementById('libInput');
 
-dropZone.addEventListener('click', ()=> fileInput.click());
-dropZone.addEventListener('dragover', e=>{ e.preventDefault(); });
-dropZone.addEventListener('drop', e=>{
-  e.preventDefault();
-  const f = e.dataTransfer.files[0];
-  if(f) loadFile(f);
-});
-fileInput.addEventListener('change', ()=>{
-  if(fileInput.files[0]) loadFile(fileInput.files[0]);
-});
+document.getElementById('btnCamera').addEventListener('click', () => cameraInput.click());
+document.getElementById('btnLibrary').addEventListener('click', () => libInput.click());
+cameraInput.addEventListener('change', () => { if (cameraInput.files[0]) loadFile(cameraInput.files[0]); });
+libInput.addEventListener('change',    () => { if (libInput.files[0])    loadFile(libInput.files[0]); });
 
-function loadFile(file) {
-  const reader = new FileReader();
-  reader.onload = e => { imgDataURL = e.target.result; startMeasure(); };
-  reader.readAsDataURL(file);
+function loadFile(f) {
+  const r = new FileReader();
+  r.onload = e => { imgDataURL = e.target.result; startMeasure(); };
+  r.readAsDataURL(f);
 }
 
-// ============================================================
-//  Measure phase setup
-// ============================================================
-function startMeasure() {
-  facePoints = [];
-  img = new Image();
-  img.onload = () => {
-    showPhase(2);
-    // Wait one frame so canvasWrap has layout dimensions
-    requestAnimationFrame(() => {
-      const wrap = document.getElementById('canvasWrap');
-      mainCanvas.width  = wrap.clientWidth  || 360;
-      mainCanvas.height = wrap.clientHeight || 280;
-      fitImage();
-      redraw();
-      updateInstr();
-    });
-  };
-  img.src = imgDataURL;
+// ── Canvas sizing (DPR-aware) ──────────────────────────────
+function resizeCanvas() {
+  const wrap = document.getElementById('canvasWrap');
+  // Force synchronous reflow so clientWidth/Height are correct
+  // even if the wrap was just made visible
+  void wrap.offsetHeight;
+  const w = wrap.clientWidth  || window.innerWidth;
+  const h = wrap.clientHeight || Math.round(window.innerHeight * 0.55);
+  DPR = Math.min(window.devicePixelRatio || 1, 3);
+  mainCanvas.width  = Math.round(w * DPR);
+  mainCanvas.height = Math.round(h * DPR);
 }
 
 function fitImage() {
-  const s = Math.min(mainCanvas.width/img.naturalWidth, mainCanvas.height/img.naturalHeight);
+  if (!img || !mainCanvas.width || !mainCanvas.height) return;
+  const s = Math.min(
+    mainCanvas.width  / img.naturalWidth,
+    mainCanvas.height / img.naturalHeight
+  );
   view.scale    = s;
   view.minScale = Math.max(0.05, s * 0.4);
   view.x = (mainCanvas.width  - img.naturalWidth  * s) / 2;
   view.y = (mainCanvas.height - img.naturalHeight * s) / 2;
 }
 
-// ============================================================
-//  Coordinate helpers
-// ============================================================
-function canvasToImg(cx, cy) {
-  return { x:(cx-view.x)/view.scale, y:(cy-view.y)/view.scale };
+// ── Start measuring ────────────────────────────────────────
+function startMeasure() {
+  if (resultTimer) { clearTimeout(resultTimer); resultTimer = null; }
+  facePoints = [];
+  img = new Image();
+  img.onload = () => {
+    showPhase(2);
+    resizeCanvas();   // reads wrap size AFTER showPhase makes it visible
+    fitImage();
+    redraw();
+    updateInstr();
+    document.getElementById('undoBtn').disabled = true;
+  };
+  img.src = imgDataURL;
 }
 
+// ── Coordinate helpers ─────────────────────────────────────
+// Client (CSS) px → canvas buffer px
+function clientToCanvas(cx, cy) {
+  const r = mainCanvas.getBoundingClientRect();
+  const sx = mainCanvas.width  / r.width;
+  const sy = mainCanvas.height / r.height;
+  return { x: (cx - r.left) * sx, y: (cy - r.top) * sy };
+}
+// Canvas buffer px → image px
+function canvasToImg(cx, cy) {
+  return { x: (cx - view.x) / view.scale, y: (cy - view.y) / view.scale };
+}
 function clampView() {
+  if (!img) return;
+  const mg = 50 * DPR;
   const iw = img.naturalWidth  * view.scale;
   const ih = img.naturalHeight * view.scale;
-  const mg = 50;
-  view.x = Math.max(mg-iw, Math.min(mainCanvas.width  - mg, view.x));
-  view.y = Math.max(mg-ih, Math.min(mainCanvas.height - mg, view.y));
+  view.x = Math.max(mg - iw, Math.min(mainCanvas.width  - mg, view.x));
+  view.y = Math.max(mg - ih, Math.min(mainCanvas.height - mg, view.y));
 }
 
-// Get canvas-pixel position from a touch/mouse client event
-function clientToCanvas(clientX, clientY) {
-  const rect = mainCanvas.getBoundingClientRect();
-  const sx = mainCanvas.width  / rect.width;
-  const sy = mainCanvas.height / rect.height;
-  return { x:(clientX-rect.left)*sx, y:(clientY-rect.top)*sy };
-}
-
-// ============================================================
-//  Draw
-// ============================================================
+// ── Draw ───────────────────────────────────────────────────
 function redraw() {
-  ctx.clearRect(0,0,mainCanvas.width,mainCanvas.height);
-  if(!img) return;
+  ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+  if (!img) return;
 
   // Image
   ctx.save();
-  ctx.setTransform(view.scale,0,0,view.scale,view.x,view.y);
-  ctx.drawImage(img,0,0);
+  ctx.setTransform(view.scale, 0, 0, view.scale, view.x, view.y);
+  ctx.drawImage(img, 0, 0);
   ctx.restore();
 
-  // Ellipse preview
+  // Ellipse preview (≥3 points)
   const ell = computeEllipse(facePoints);
-  if(ell && facePoints.length>=3) {
+  if (ell && facePoints.length >= 3) {
     ctx.save();
-    ctx.setTransform(view.scale,0,0,view.scale,view.x,view.y);
-    ctx.strokeStyle='rgba(255,200,80,0.9)';
-    ctx.lineWidth=3/view.scale;
-    ctx.setLineDash([8/view.scale,4/view.scale]);
-    ctx.shadowColor='rgba(255,140,40,0.7)';
-    ctx.shadowBlur=10/view.scale;
+    ctx.setTransform(view.scale, 0, 0, view.scale, view.x, view.y);
+    ctx.strokeStyle = 'rgba(255,200,80,0.9)';
+    ctx.lineWidth   = 3 / view.scale;
+    ctx.setLineDash([8 / view.scale, 4 / view.scale]);
+    ctx.shadowColor = 'rgba(255,140,40,0.7)';
+    ctx.shadowBlur  = 10 / view.scale;
     ctx.beginPath();
-    ctx.ellipse(ell.cx,ell.cy,ell.a,ell.b,0,0,Math.PI*2);
+    ctx.ellipse(ell.cx, ell.cy, ell.a, ell.b, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
 
-  // Face points
-  const r = Math.max(10, 20/view.scale);
-  facePoints.forEach((p,i)=>{
-    const cx = p.x*view.scale+view.x;
-    const cy = p.y*view.scale+view.y;
+  // Face points – fixed visual size regardless of zoom
+  const dotR = Math.max(10 * DPR, 20 / view.scale);
+  facePoints.forEach((p, i) => {
+    const cx = p.x * view.scale + view.x;
+    const cy = p.y * view.scale + view.y;
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx,cy,r,0,Math.PI*2);
-    ctx.fillStyle=COLORS[i];
+    ctx.arc(cx, cy, dotR, 0, Math.PI * 2);
+    ctx.fillStyle = COLORS[i];
     ctx.fill();
-    ctx.strokeStyle='#fff';
-    ctx.lineWidth=2.5;
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth   = 2.5 * DPR;
     ctx.stroke();
-    ctx.font=`bold ${Math.round(r*0.85)}px sans-serif`;
-    ctx.fillStyle='#fff';
-    ctx.textAlign='center';
-    ctx.textBaseline='middle';
-    ctx.fillText(i+1,cx,cy);
+    ctx.font         = `bold ${Math.round(dotR * 0.8)}px sans-serif`;
+    ctx.fillStyle    = '#fff';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(i + 1, cx, cy);
     ctx.restore();
   });
 }
 
-// ============================================================
-//  Ellipse math
-// ============================================================
+// ── Ellipse math ───────────────────────────────────────────
 function computeEllipse(pts) {
-  if(pts.length<2) return null;
-  const L=pts[0],R=pts[1];
-  const a=Math.abs(R.x-L.x)/2;
-  const cx=(L.x+R.x)/2;
-  if(pts.length<4) return {cx, cy:(L.y+R.y)/2, a, b:a*0.65};
-  const T=pts[2],B=pts[3];
-  const b=Math.abs(B.y-T.y)/2;
-  const cy=(T.y+B.y)/2;
-  return {cx,cy,a,b};
+  if (pts.length < 2) return null;
+  const L = pts[0], R = pts[1];
+  const a  = Math.abs(R.x - L.x) / 2;
+  const cx = (L.x + R.x) / 2;
+  if (pts.length < 4) return { cx, cy: (L.y + R.y) / 2, a, b: a * 0.65 };
+  const T = pts[2], B = pts[3];
+  return { cx, cy: (T.y + B.y) / 2, a, b: Math.abs(B.y - T.y) / 2 };
+}
+function ellipseCircum(a, b) {
+  return Math.PI * (3 * (a + b) - Math.sqrt((3*a + b) * (a + 3*b)));
 }
 
-function ellipseCircum(a,b) {
-  return Math.PI*(3*(a+b)-Math.sqrt((3*a+b)*(a+3*b)));
-}
-
-// ============================================================
-//  Instruction update
-// ============================================================
+// ── Instruction bar ────────────────────────────────────────
 function updateInstr() {
   const bar = document.getElementById('instrBar');
-  if(facePoints.length>=4) {
-    bar.innerHTML='✅ 4点の指定が完了しました！';
+  if (facePoints.length >= 4) {
+    bar.innerHTML = '✅ 4点の指定が完了しました！';
     return;
   }
-  const i=facePoints.length;
-  bar.innerHTML=`<span class="instr-badge">${i+1}</span>&nbsp;顔の<strong>${LABELS[i]}</strong>をタップしてください`;
+  const i = facePoints.length;
+  bar.innerHTML = `<span class="instr-badge">${i+1}</span>&nbsp;顔の<strong>${LABELS[i]}</strong>をタップしてください`;
 }
 
-// ============================================================
-//  Touch handling (state machine)
-// ============================================================
-mainCanvas.addEventListener('touchstart', onTouchStart, {passive:false});
-mainCanvas.addEventListener('touchmove',  onTouchMove,  {passive:false});
-mainCanvas.addEventListener('touchend',   onTouchEnd,   {passive:false});
-mainCanvas.addEventListener('touchcancel',()=>{ tState='idle'; pinch=null; tStart=null; },{passive:true});
+// ── Touch state machine ────────────────────────────────────
+const TAP_DIST_PX = 12; // CSS-pixel drag threshold before tap becomes pan
 
-function onTouchStart(e) {
+mainCanvas.addEventListener('touchstart',  onTStart, { passive: false });
+mainCanvas.addEventListener('touchmove',   onTMove,  { passive: false });
+mainCanvas.addEventListener('touchend',    onTEnd,   { passive: false });
+mainCanvas.addEventListener('touchcancel', () => {
+  tState = 'idle'; pinch = tStart = tStartClient = null;
+}, { passive: true });
+
+function onTStart(e) {
   e.preventDefault();
-  if(e.touches.length===1) {
-    const t=e.touches[0];
-    const pos=clientToCanvas(t.clientX,t.clientY);
-    tStart={cx:pos.x,cy:pos.y,vx:view.x,vy:view.y};
-    tState='maybe-tap';
-  } else if(e.touches.length===2) {
-    const t0=e.touches[0],t1=e.touches[1];
-    const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
-    const mid=clientToCanvas((t0.clientX+t1.clientX)/2,(t0.clientY+t1.clientY)/2);
-    pinch={dist0:dist,midCx:mid.x,midCy:mid.y,scale0:view.scale,vx0:view.x,vy0:view.y};
-    tState='pinching';
+  if (e.touches.length === 1) {
+    const t = e.touches[0];
+    const pos = clientToCanvas(t.clientX, t.clientY);
+    tStart       = { cx: pos.x, cy: pos.y, vx: view.x, vy: view.y };
+    tStartClient = { x: t.clientX, y: t.clientY };
+    tState = 'maybe-tap';
+  } else if (e.touches.length === 2) {
+    startPinch(e.touches[0], e.touches[1]);
   }
 }
 
-function onTouchMove(e) {
+function onTMove(e) {
   e.preventDefault();
-  if(e.touches.length===2) {
-    if(tState!=='pinching') {
-      // Started as single touch, became pinch
-      const t0=e.touches[0],t1=e.touches[1];
-      const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
-      const mid=clientToCanvas((t0.clientX+t1.clientX)/2,(t0.clientY+t1.clientY)/2);
-      pinch={dist0:dist,midCx:mid.x,midCy:mid.y,scale0:view.scale,vx0:view.x,vy0:view.y};
-      tState='pinching';
-    }
-    const t0=e.touches[0],t1=e.touches[1];
-    const dist=Math.hypot(t0.clientX-t1.clientX,t0.clientY-t1.clientY);
-    const mid=clientToCanvas((t0.clientX+t1.clientX)/2,(t0.clientY+t1.clientY)/2);
-    if(pinch && pinch.dist0>0) {
-      const newScale=Math.max(view.minScale,Math.min(12,pinch.scale0*dist/pinch.dist0));
-      // Keep image point under initial pinch center fixed under current mid
-      const imgX=(pinch.midCx-pinch.vx0)/pinch.scale0;
-      const imgY=(pinch.midCy-pinch.vy0)/pinch.scale0;
-      view.x=mid.x - imgX*newScale;
-      view.y=mid.y - imgY*newScale;
-      view.scale=newScale;
+  if (e.touches.length >= 2) {
+    if (tState !== 'pinching') startPinch(e.touches[0], e.touches[1]);
+    doPinch(e.touches[0], e.touches[1]);
+  } else if (e.touches.length === 1 && tStart) {
+    const t = e.touches[0];
+    const dx = t.clientX - tStartClient.x;
+    const dy = t.clientY - tStartClient.y;
+    if (Math.hypot(dx, dy) > TAP_DIST_PX) tState = 'panning';
+    if (tState === 'panning') {
+      const pos = clientToCanvas(t.clientX, t.clientY);
+      view.x = tStart.vx + (pos.x - tStart.cx);
+      view.y = tStart.vy + (pos.y - tStart.cy);
       clampView();
       redraw();
     }
-  } else if(e.touches.length===1) {
-    const t=e.touches[0];
-    const pos=clientToCanvas(t.clientX,t.clientY);
-    if(tStart) {
-      const dx=pos.x-tStart.cx, dy=pos.y-tStart.cy;
-      if(Math.hypot(dx,dy)>8) {
-        tState='panning';
-      }
-      if(tState==='panning') {
-        view.x=tStart.vx+dx;
-        view.y=tStart.vy+dy;
-        clampView();
-        redraw();
-      }
-    }
   }
 }
 
-function onTouchEnd(e) {
+function onTEnd(e) {
   e.preventDefault();
-  if(tState==='maybe-tap' && e.changedTouches.length===1 && e.touches.length===0) {
-    placeFacePoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+  if (tState === 'maybe-tap' && e.changedTouches.length === 1 && e.touches.length === 0) {
+    const t = e.changedTouches[0];
+    placeFacePoint(t.clientX, t.clientY);
   }
-  if(e.touches.length===0) {
-    tState='idle'; pinch=null; tStart=null;
-  } else if(e.touches.length===1 && tState==='pinching') {
-    // Lifted one finger after pinch – resume pan mode
-    const t=e.touches[0];
-    const pos=clientToCanvas(t.clientX,t.clientY);
-    tStart={cx:pos.x,cy:pos.y,vx:view.x,vy:view.y};
-    tState='panning';
+  if (e.touches.length === 0) {
+    tState = 'idle'; pinch = tStart = tStartClient = null;
+  } else if (e.touches.length === 1 && tState === 'pinching') {
+    // One finger lifted after pinch → switch to pan mode (not tap)
+    const t = e.touches[0];
+    const pos = clientToCanvas(t.clientX, t.clientY);
+    tStart       = { cx: pos.x, cy: pos.y, vx: view.x, vy: view.y };
+    tStartClient = { x: t.clientX, y: t.clientY };
+    tState = 'panning';
   }
 }
 
-// Mouse (desktop)
-mainCanvas.addEventListener('click', e=>{
-  placeFacePoint(e.clientX, e.clientY);
-});
-mainCanvas.addEventListener('wheel', e=>{
+function startPinch(t0, t1) {
+  const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+  const mid  = clientToCanvas((t0.clientX + t1.clientX) / 2, (t0.clientY + t1.clientY) / 2);
+  pinch  = { dist0: dist, midCx: mid.x, midCy: mid.y,
+             scale0: view.scale, vx0: view.x, vy0: view.y };
+  tState = 'pinching';
+}
+
+function doPinch(t0, t1) {
+  if (!pinch || pinch.dist0 === 0) return;
+  const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+  const mid  = clientToCanvas((t0.clientX + t1.clientX) / 2, (t0.clientY + t1.clientY) / 2);
+  const ns   = Math.max(view.minScale, Math.min(12, pinch.scale0 * dist / pinch.dist0));
+  // Keep the image point originally under pinch-start-mid fixed under current mid
+  const ix = (pinch.midCx - pinch.vx0) / pinch.scale0;
+  const iy = (pinch.midCy - pinch.vy0) / pinch.scale0;
+  view.x = mid.x - ix * ns;
+  view.y = mid.y - iy * ns;
+  view.scale = ns;
+  clampView();
+  redraw();
+}
+
+// Mouse support (desktop)
+mainCanvas.addEventListener('click', e => placeFacePoint(e.clientX, e.clientY));
+mainCanvas.addEventListener('wheel', e => {
   e.preventDefault();
-  const pos=clientToCanvas(e.clientX,e.clientY);
-  const factor=e.deltaY<0?1.15:1/1.15;
-  const newScale=Math.max(view.minScale,Math.min(12,view.scale*factor));
-  const imgX=(pos.x-view.x)/view.scale;
-  const imgY=(pos.y-view.y)/view.scale;
-  view.x=pos.x-imgX*newScale;
-  view.y=pos.y-imgY*newScale;
-  view.scale=newScale;
+  const pos = clientToCanvas(e.clientX, e.clientY);
+  const f   = e.deltaY < 0 ? 1.15 : 1 / 1.15;
+  const ns  = Math.max(view.minScale, Math.min(12, view.scale * f));
+  const ix  = (pos.x - view.x) / view.scale;
+  const iy  = (pos.y - view.y) / view.scale;
+  view.x = pos.x - ix * ns;
+  view.y = pos.y - iy * ns;
+  view.scale = ns;
   clampView(); redraw();
-},{passive:false});
+}, { passive: false });
 
 function placeFacePoint(clientX, clientY) {
-  if(!img || facePoints.length>=4) return;
-  const pos=clientToCanvas(clientX,clientY);
-  const ip=canvasToImg(pos.x,pos.y);
-  if(ip.x<0||ip.y<0||ip.x>img.naturalWidth||ip.y>img.naturalHeight) return;
+  if (!img || facePoints.length >= 4) return;
+  const pos = clientToCanvas(clientX, clientY);
+  const ip  = canvasToImg(pos.x, pos.y);
+  if (ip.x < 0 || ip.y < 0 || ip.x > img.naturalWidth || ip.y > img.naturalHeight) return;
   facePoints.push(ip);
-  document.getElementById('undoBtn').disabled=false;
+  document.getElementById('undoBtn').disabled = false;
   redraw();
   updateInstr();
-  if(facePoints.length===4) setTimeout(showResult,600);
+  if (facePoints.length === 4) resultTimer = setTimeout(showResult, 600);
 }
 
-// ============================================================
-//  Zoom buttons
-// ============================================================
-document.getElementById('zoomInBtn').addEventListener('click',()=>{
-  zoomCenter(1.5);
-});
-document.getElementById('zoomOutBtn').addEventListener('click',()=>{
-  zoomCenter(1/1.5);
-});
-document.getElementById('zoomResetBtn').addEventListener('click',()=>{
-  fitImage(); redraw();
-});
-document.getElementById('undoBtn').addEventListener('click',()=>{
-  facePoints.pop();
-  document.getElementById('undoBtn').disabled=facePoints.length===0;
-  redraw(); updateInstr();
-});
-document.getElementById('resetBtn').addEventListener('click',()=>{
-  facePoints=[];
-  document.getElementById('undoBtn').disabled=true;
-  redraw(); updateInstr();
-});
-
-function zoomCenter(factor) {
-  const cx=mainCanvas.width/2, cy=mainCanvas.height/2;
-  const newScale=Math.max(view.minScale,Math.min(12,view.scale*factor));
-  const imgX=(cx-view.x)/view.scale;
-  const imgY=(cy-view.y)/view.scale;
-  view.x=cx-imgX*newScale;
-  view.y=cy-imgY*newScale;
-  view.scale=newScale;
+// ── Zoom buttons ───────────────────────────────────────────
+function zoomCenter(f) {
+  const cx = mainCanvas.width / 2, cy = mainCanvas.height / 2;
+  const ns = Math.max(view.minScale, Math.min(12, view.scale * f));
+  const ix = (cx - view.x) / view.scale, iy = (cy - view.y) / view.scale;
+  view.x = cx - ix * ns; view.y = cy - iy * ns; view.scale = ns;
   clampView(); redraw();
 }
 
-// ============================================================
-//  Show result
-// ============================================================
+document.getElementById('zoomInBtn').addEventListener('click',    () => zoomCenter(1.5));
+document.getElementById('zoomOutBtn').addEventListener('click',   () => zoomCenter(1 / 1.5));
+document.getElementById('zoomResetBtn').addEventListener('click', () => { fitImage(); redraw(); });
+
+document.getElementById('undoBtn').addEventListener('click', () => {
+  if (resultTimer) { clearTimeout(resultTimer); resultTimer = null; }
+  facePoints.pop();
+  document.getElementById('undoBtn').disabled = facePoints.length === 0;
+  redraw(); updateInstr();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (resultTimer) { clearTimeout(resultTimer); resultTimer = null; }
+  facePoints = [];
+  document.getElementById('undoBtn').disabled = true;
+  redraw(); updateInstr();
+});
+
+// ── Show result ────────────────────────────────────────────
 function showResult() {
-  const ell=computeEllipse(facePoints);
-  if(!ell) return;
+  const ell = computeEllipse(facePoints);
+  if (!ell) return;
 
-  // Draw result canvas (fits within card)
-  const maxW=Math.min(640, window.innerWidth-24);
-  const sc=Math.min(1, maxW/img.naturalWidth,
-                       (window.innerHeight*0.38)/img.naturalHeight);
-  resultCanvas.width =Math.round(img.naturalWidth *sc);
-  resultCanvas.height=Math.round(img.naturalHeight*sc);
-  rCtx.drawImage(img,0,0,resultCanvas.width,resultCanvas.height);
+  const maxW = Math.min(640, (window.innerWidth || 390) - 24);
+  const sc   = Math.min(1, maxW / img.naturalWidth,
+                          (window.innerHeight * 0.38) / img.naturalHeight);
+  resultCanvas.width  = Math.round(img.naturalWidth  * sc);
+  resultCanvas.height = Math.round(img.naturalHeight * sc);
 
-  // Filled ellipse overlay
+  rCtx.drawImage(img, 0, 0, resultCanvas.width, resultCanvas.height);
+
   rCtx.save();
-  rCtx.globalAlpha=0.18;
-  rCtx.fillStyle='#FFB347';
-  rCtx.beginPath();
-  rCtx.ellipse(ell.cx*sc,ell.cy*sc,ell.a*sc,ell.b*sc,0,0,Math.PI*2);
-  rCtx.fill();
-  rCtx.restore();
+  rCtx.globalAlpha = 0.18; rCtx.fillStyle = '#FFB347';
+  rCtx.beginPath(); rCtx.ellipse(ell.cx*sc,ell.cy*sc,ell.a*sc,ell.b*sc,0,0,Math.PI*2);
+  rCtx.fill(); rCtx.restore();
 
-  // Ellipse border
   rCtx.save();
-  rCtx.strokeStyle='#FF8C42';
-  rCtx.lineWidth=3;
-  rCtx.shadowColor='rgba(255,140,66,0.6)';
-  rCtx.shadowBlur=8;
-  rCtx.beginPath();
-  rCtx.ellipse(ell.cx*sc,ell.cy*sc,ell.a*sc,ell.b*sc,0,0,Math.PI*2);
-  rCtx.stroke();
-  rCtx.restore();
+  rCtx.strokeStyle = '#FF8C42'; rCtx.lineWidth = 3;
+  rCtx.shadowColor = 'rgba(255,140,66,0.6)'; rCtx.shadowBlur = 8;
+  rCtx.beginPath(); rCtx.ellipse(ell.cx*sc,ell.cy*sc,ell.a*sc,ell.b*sc,0,0,Math.PI*2);
+  rCtx.stroke(); rCtx.restore();
 
-  // Points
-  facePoints.forEach((p,i)=>{
-    rCtx.save();
-    rCtx.beginPath();
-    rCtx.arc(p.x*sc,p.y*sc,7,0,Math.PI*2);
-    rCtx.fillStyle=COLORS[i];
-    rCtx.fill();
-    rCtx.strokeStyle='#fff';
-    rCtx.lineWidth=2;
-    rCtx.stroke();
-    rCtx.restore();
+  facePoints.forEach((p, i) => {
+    rCtx.save(); rCtx.beginPath(); rCtx.arc(p.x*sc, p.y*sc, 7, 0, Math.PI*2);
+    rCtx.fillStyle = COLORS[i]; rCtx.fill();
+    rCtx.strokeStyle = '#fff'; rCtx.lineWidth = 2; rCtx.stroke(); rCtx.restore();
   });
 
-  const circ=ellipseCircum(ell.a,ell.b);
-  document.getElementById('circumPx').innerHTML=
-    `${Math.round(circ)}<span class="res-unit"> px</span>`;
-  document.getElementById('widthPx').textContent=`${Math.round(ell.a*2)} px`;
-  document.getElementById('heightPx').textContent=`${Math.round(ell.b*2)} px`;
+  const circ = ellipseCircum(ell.a, ell.b);
+  document.getElementById('circumPx').innerHTML = `${Math.round(circ)}<span class="res-unit"> px</span>`;
+  document.getElementById('widthPx').textContent  = `${Math.round(ell.a * 2)} px`;
+  document.getElementById('heightPx').textContent = `${Math.round(ell.b * 2)} px`;
 
-  // Reset calibration UI
-  cmPerPx=null; refPoints=[];
+  cmPerPx = null; refPoints = [];
   document.getElementById('cmGrid').classList.add('hidden');
-  document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
+  document.getElementById('refStatus').textContent = '👆 基準物の左端をタップ';
 
   showPhase(3);
-
-  // Init reference canvas after phase is visible
-  requestAnimationFrame(()=> initRefCanvas());
+  requestAnimationFrame(initRefCanvas);
 }
 
-// ============================================================
-//  Reference canvas (for cm calibration)
-// ============================================================
+// ── Reference canvas ───────────────────────────────────────
 function initRefCanvas() {
-  if(!img) return;
-  const wrap=document.getElementById('refCanvasWrap');
-  const maxW=Math.min(540, wrap.clientWidth||360);
-  const sc=Math.min(1,maxW/img.naturalWidth);
-  refCanvas.width =Math.round(img.naturalWidth *sc);
-  refCanvas.height=Math.round(img.naturalHeight*sc);
-  refPoints=[];
+  if (!img) return;
+  const wrap = document.getElementById('refCanvasWrap');
+  void wrap.offsetHeight;
+  const maxW = Math.min(540, wrap.clientWidth || 360);
+  const sc   = Math.min(1, maxW / img.naturalWidth);
+  refCanvas.width  = Math.round(img.naturalWidth  * sc);
+  refCanvas.height = Math.round(img.naturalHeight * sc);
+  refPoints = [];
   drawRefCanvas();
-  document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
-  document.getElementById('cmGrid').classList.add('hidden');
 }
 
 function drawRefCanvas() {
-  refCtx.drawImage(img,0,0,refCanvas.width,refCanvas.height);
-  refPoints.forEach((p,i)=>{
-    refCtx.save();
-    refCtx.beginPath();
-    refCtx.arc(p.x,p.y,8,0,Math.PI*2);
-    refCtx.fillStyle=i===0?'#FF6B6B':'#4D96FF';
-    refCtx.fill();
-    refCtx.strokeStyle='#fff';
-    refCtx.lineWidth=2;
-    refCtx.stroke();
-    refCtx.restore();
+  refCtx.clearRect(0, 0, refCanvas.width, refCanvas.height);
+  refCtx.drawImage(img, 0, 0, refCanvas.width, refCanvas.height);
+  refPoints.forEach((p, i) => {
+    refCtx.save(); refCtx.beginPath(); refCtx.arc(p.x, p.y, 8, 0, Math.PI*2);
+    refCtx.fillStyle = i === 0 ? '#FF6B6B' : '#4D96FF'; refCtx.fill();
+    refCtx.strokeStyle = '#fff'; refCtx.lineWidth = 2; refCtx.stroke(); refCtx.restore();
   });
-  if(refPoints.length===2) {
-    refCtx.save();
-    refCtx.strokeStyle='#FFD93D';
-    refCtx.lineWidth=2;
-    refCtx.setLineDash([6,4]);
-    refCtx.beginPath();
-    refCtx.moveTo(refPoints[0].x,refPoints[0].y);
-    refCtx.lineTo(refPoints[1].x,refPoints[1].y);
-    refCtx.stroke();
-    refCtx.restore();
+  if (refPoints.length === 2) {
+    refCtx.save(); refCtx.strokeStyle = '#FFD93D'; refCtx.lineWidth = 2;
+    refCtx.setLineDash([6,4]); refCtx.beginPath();
+    refCtx.moveTo(refPoints[0].x, refPoints[0].y);
+    refCtx.lineTo(refPoints[1].x, refPoints[1].y);
+    refCtx.stroke(); refCtx.restore();
   }
 }
 
 function addRefPoint(clientX, clientY) {
-  if(refPoints.length>=2) {
-    refPoints=[];
+  if (refPoints.length >= 2) {
+    refPoints = [];
     document.getElementById('cmGrid').classList.add('hidden');
   }
-  const rect=refCanvas.getBoundingClientRect();
-  const sx=refCanvas.width/rect.width;
-  const sy=refCanvas.height/rect.height;
+  const rect = refCanvas.getBoundingClientRect();
   refPoints.push({
-    x:(clientX-rect.left)*sx,
-    y:(clientY-rect.top)*sy
+    x: (clientX - rect.left) * (refCanvas.width  / rect.width),
+    y: (clientY - rect.top)  * (refCanvas.height / rect.height),
   });
-
-  const st=document.getElementById('refStatus');
-  if(refPoints.length===1) {
-    st.textContent='👆 基準物の右端をタップ';
-  } else {
-    computeCmPerPx();
-  }
+  const st = document.getElementById('refStatus');
+  if (refPoints.length === 1) st.textContent = '👆 基準物の右端をタップ';
+  else computeCmPerPx();
   drawRefCanvas();
 }
 
-refCanvas.addEventListener('click', e=> addRefPoint(e.clientX,e.clientY));
-refCanvas.addEventListener('touchend', e=>{
+refCanvas.addEventListener('click', e => addRefPoint(e.clientX, e.clientY));
+refCanvas.addEventListener('touchend', e => {
   e.preventDefault();
-  if(e.changedTouches.length===1) addRefPoint(e.changedTouches[0].clientX,e.changedTouches[0].clientY);
-},{passive:false});
+  if (e.changedTouches.length === 1) addRefPoint(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+}, { passive: false });
 
 function computeCmPerPx() {
-  if(refPoints.length<2) return;
-  const dx=refPoints[1].x-refPoints[0].x;
-  const dy=refPoints[1].y-refPoints[0].y;
-  const pxDist=Math.sqrt(dx*dx+dy*dy);
-  if(pxDist<5) return;
+  if (refPoints.length < 2) return;
+  const dx = refPoints[1].x - refPoints[0].x;
+  const dy = refPoints[1].y - refPoints[0].y;
+  const pxDist = Math.hypot(dx, dy);
+  if (pxDist < 5) return;
 
-  // Convert refCanvas px distance → image px distance
-  const sc=refCanvas.width/img.naturalWidth;
-  const imgPxDist=pxDist/sc;
+  // refCanvas pixels → image pixels
+  const imgPxDist = pxDist / (refCanvas.width / img.naturalWidth);
 
-  let cm=REF_DEFS[refMode].cm;
-  if(refMode==='custom') {
-    cm=parseFloat(document.getElementById('customCm').value);
-    if(!cm||cm<=0){
+  let cm = REF_DEFS[refMode].cm;
+  if (refMode === 'custom') {
+    cm = parseFloat(document.getElementById('customCm').value);
+    if (!cm || cm <= 0) {
       alert('カスタムサイズを入力してください（cm）');
-      refPoints=[];
-      drawRefCanvas();
-      document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
+      refPoints = []; drawRefCanvas();
+      document.getElementById('refStatus').textContent = '👆 基準物の左端をタップ';
       return;
     }
   }
-
-  cmPerPx=cm/imgPxDist;
-  document.getElementById('refStatus').textContent=
-    `✅ 設定完了：1px ≈ ${cmPerPx.toFixed(4)} cm`;
+  cmPerPx = cm / imgPxDist;
+  document.getElementById('refStatus').textContent = `✅ 設定完了：1px ≈ ${cmPerPx.toFixed(4)} cm`;
   showCmResult();
 }
 
 function showCmResult() {
-  if(!cmPerPx) return;
-  const ell=computeEllipse(facePoints);
-  if(!ell) return;
-  const toC=px=>(px*cmPerPx).toFixed(1)+' cm';
-  const circ=ellipseCircum(ell.a,ell.b);
-  document.getElementById('cmCircum').textContent=toC(circ);
-  document.getElementById('cmWidth').textContent=toC(ell.a*2);
-  document.getElementById('cmHeight').textContent=toC(ell.b*2);
+  if (!cmPerPx) return;
+  const ell  = computeEllipse(facePoints);
+  if (!ell) return;
+  const toC  = px => (px * cmPerPx).toFixed(1) + ' cm';
+  const circ = ellipseCircum(ell.a, ell.b);
+  document.getElementById('cmCircum').textContent = toC(circ);
+  document.getElementById('cmWidth').textContent  = toC(ell.a * 2);
+  document.getElementById('cmHeight').textContent = toC(ell.b * 2);
   document.getElementById('cmGrid').classList.remove('hidden');
 }
 
-// ============================================================
-//  Ref tab switching
-// ============================================================
-const REF_DESCS = {
-  coin500:`写真に写っている <strong>500円玉</strong>（直径 2.65 cm）の<br><strong>左端 → 右端</strong> の順に2点タップしてください`,
-  card_w: `写真に写っている <strong>クレジットカードの横辺</strong>（8.56 cm）の<br><strong>左端 → 右端</strong> の順に2点タップしてください`,
-  card_h: `写真に写っている <strong>クレジットカードの縦辺</strong>（5.40 cm）の<br><strong>上端 → 下端</strong> の順に2点タップしてください`,
-  custom: `基準物の実寸を入力してから、<br><strong>左端（または上端）→ 右端（または下端）</strong> の順に2点タップしてください`,
-};
-
-document.querySelectorAll('.ref-tab').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    document.querySelectorAll('.ref-tab').forEach(b=>b.classList.remove('active'));
+// ── Ref tabs ───────────────────────────────────────────────
+document.querySelectorAll('.ref-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.ref-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    refMode=btn.dataset.ref;
-    document.getElementById('customRow').classList.toggle('hidden', refMode!=='custom');
-    document.getElementById('refDesc').innerHTML=REF_DESCS[refMode];
-    // Reset ref points
-    cmPerPx=null; refPoints=[];
+    refMode = btn.dataset.ref;
+    document.getElementById('customRow').classList.toggle('hidden', refMode !== 'custom');
+    document.getElementById('refDesc').innerHTML = REF_DESCS[refMode];
+    cmPerPx = null; refPoints = [];
     document.getElementById('cmGrid').classList.add('hidden');
-    document.getElementById('refStatus').textContent='👆 基準物の左端をタップ';
+    document.getElementById('refStatus').textContent = '👆 基準物の左端をタップ';
     drawRefCanvas();
   });
 });
 
-// ============================================================
-//  Retry / new photo
-// ============================================================
-document.getElementById('retryBtn').addEventListener('click',()=>{
-  facePoints=[];
+// ── Retry / New photo ──────────────────────────────────────
+document.getElementById('retryBtn').addEventListener('click', () => {
+  if (resultTimer) { clearTimeout(resultTimer); resultTimer = null; }
+  facePoints = [];
+  document.getElementById('undoBtn').disabled = true;
   showPhase(2);
-  requestAnimationFrame(()=>{ fitImage(); redraw(); updateInstr(); });
+  resizeCanvas();
+  fitImage();
+  redraw();
+  updateInstr();
 });
-document.getElementById('newPhotoBtn').addEventListener('click',()=>{
-  img=null; imgDataURL=null; facePoints=[];
-  fileInput.value='';
+
+document.getElementById('newPhotoBtn').addEventListener('click', () => {
+  if (resultTimer) { clearTimeout(resultTimer); resultTimer = null; }
+  img = null; imgDataURL = null; facePoints = [];
+  cameraInput.value = ''; libInput.value = '';
   showPhase(1);
 });
 </script>

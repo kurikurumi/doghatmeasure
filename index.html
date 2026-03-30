@@ -443,7 +443,8 @@ function redraw() {
   }
 
   // Face points – fixed visual size regardless of zoom
-  const dotR = Math.max(10 * DPR, 20 / view.scale);
+  // 固定12CSSピクセル相当。view.scaleに依存させると高解像度写真で巨大になる
+  const dotR = 12 * DPR;
   facePoints.forEach((p, i) => {
     const cx = p.x * view.scale + view.x;
     const cy = p.y * view.scale + view.y;

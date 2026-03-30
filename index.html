@@ -757,6 +757,15 @@ let zoomOffY  = 0;
 let minZoom   = 1;
 const MAX_ZOOM = 8;
 
+// ピンチ判定フラグ（指が2本以上触れたことがある）
+let touchCount    = 0;   // 現在画面に触れている指の数
+let wasPinching   = false; // このタッチシーケンスでピンチがあったか
+let lastPinchDist = 0;
+let lastPinchMidX = 0;
+let lastPinchMidY = 0;
+let lastPanX      = 0;
+let lastPanY      = 0;
+
 // ===== Elements =====
 const dropZone      = document.getElementById('dropZone');
 const fileInput     = document.getElementById('fileInput');
@@ -807,19 +816,22 @@ function loadFile(file) {
 // ===== Measure phase =====
 function startMeasure() {
   points = [];
+  wasPinching = false;
   img = new Image();
   img.onload = () => {
-    // フル解像度でcanvasを作る（ズームのために大きめに）
+    // フル解像度でcanvasを作成
     canvas.width  = img.naturalWidth;
     canvas.height = img.naturalHeight;
-    // 初期表示サイズをwrapに合わせてzoomScaleを設定
+
+    // 初期ズーム：wrapの幅に収まるように（縮小のみ、拡大しない）
+    showPhase('phasePoints'); // 先にphaseを表示してwrapの幅を確定
     const wrapW = canvasWrap.clientWidth || window.innerWidth - 32;
-    minZoom = Math.min(1, wrapW / img.naturalWidth);
+    minZoom   = Math.min(1, wrapW / img.naturalWidth);
     zoomScale = minZoom;
-    zoomOffX = 0; zoomOffY = 0;
+    zoomOffX  = 0;
+    zoomOffY  = 0;
     applyZoom();
     drawCanvas();
-    showPhase('phasePoints');
     updateInstruction();
   };
   img.src = imageDataURL;
@@ -827,11 +839,11 @@ function startMeasure() {
 
 // ===== Zoom =====
 function applyZoom() {
-  canvas.style.transform = `scale(${zoomScale})`;
+  canvas.style.transform       = `scale(${zoomScale})`;
   canvas.style.transformOrigin = '0 0';
-  canvas.style.marginLeft = zoomOffX + 'px';
-  canvas.style.marginTop  = zoomOffY + 'px';
-  // wrapの高さをcanvasの表示高さに合わせる
+  canvas.style.marginLeft      = zoomOffX + 'px';
+  canvas.style.marginTop       = zoomOffY + 'px';
+  // wrap高さをcanvas表示高さに合わせる（スクロール不要に）
   canvasWrap.style.height = Math.round(canvas.height * zoomScale) + 'px';
 }
 
@@ -839,14 +851,17 @@ function clampOffset() {
   const dispW = canvas.width  * zoomScale;
   const dispH = canvas.height * zoomScale;
   const wrapW = canvasWrap.clientWidth;
-  const wrapH = canvasWrap.clientHeight;
-  zoomOffX = Math.min(0, Math.max(wrapW - dispW, zoomOffX));
-  zoomOffY = Math.min(0, Math.max(wrapH - dispH, zoomOffY));
+  // X: 画像が右にはみ出さない、左にもはみ出さない
+  if (dispW <= wrapW) {
+    zoomOffX = 0; // 収まるなら中央寄せしない（左詰め）
+  } else {
+    zoomOffX = Math.min(0, Math.max(wrapW - dispW, zoomOffX));
+  }
+  zoomOffY = Math.min(0, Math.max(0, zoomOffY)); // 上方向は0固定
 }
 
 function zoomAt(cx, cy, newScale) {
   newScale = Math.min(MAX_ZOOM, Math.max(minZoom, newScale));
-  // cx, cy はwrap座標
   const ratio = newScale / zoomScale;
   zoomOffX = cx - ratio * (cx - zoomOffX);
   zoomOffY = cy - ratio * (cy - zoomOffY);
@@ -855,74 +870,83 @@ function zoomAt(cx, cy, newScale) {
   applyZoom();
 }
 
-zoomInBtn.addEventListener('click',    () => zoomAt(canvasWrap.clientWidth/2, canvasWrap.clientHeight/2, zoomScale * 1.5));
-zoomOutBtn.addEventListener('click',   () => zoomAt(canvasWrap.clientWidth/2, canvasWrap.clientHeight/2, zoomScale / 1.5));
+zoomInBtn.addEventListener('click',    () => zoomAt(canvasWrap.clientWidth/2, 0, zoomScale * 1.6));
+zoomOutBtn.addEventListener('click',   () => zoomAt(canvasWrap.clientWidth/2, 0, zoomScale / 1.6));
 zoomResetBtn.addEventListener('click', () => {
   zoomScale = minZoom; zoomOffX = 0; zoomOffY = 0; applyZoom();
 });
 
-// ===== Pinch & pan =====
-let lastTouches = null;
-let isPinching  = false;
-
+// ===== Touch: Pinch zoom & pan — 点置きと完全分離 =====
 canvasWrap.addEventListener('touchstart', e => {
-  lastTouches = e.touches;
-  isPinching = e.touches.length >= 2;
+  touchCount = e.touches.length;
+  if (e.touches.length === 2) {
+    wasPinching   = true;
+    const t0 = e.touches[0], t1 = e.touches[1];
+    lastPinchDist = Math.hypot(t0.clientX-t1.clientX, t0.clientY-t1.clientY);
+    const rect = canvasWrap.getBoundingClientRect();
+    lastPinchMidX = ((t0.clientX+t1.clientX)/2) - rect.left;
+    lastPinchMidY = ((t0.clientY+t1.clientY)/2) - rect.top;
+  } else if (e.touches.length === 1 && !wasPinching) {
+    lastPanX = e.touches[0].clientX;
+    lastPanY = e.touches[0].clientY;
+  }
 }, { passive: true });
 
 canvasWrap.addEventListener('touchmove', e => {
+  e.preventDefault();
   if (e.touches.length === 2) {
-    e.preventDefault();
-    isPinching = true;
+    wasPinching = true;
     const t0 = e.touches[0], t1 = e.touches[1];
-    const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+    const dist = Math.hypot(t0.clientX-t1.clientX, t0.clientY-t1.clientY);
     const rect  = canvasWrap.getBoundingClientRect();
-    const midX  = ((t0.clientX + t1.clientX) / 2) - rect.left;
-    const midY  = ((t0.clientY + t1.clientY) / 2) - rect.top;
-
-    if (lastTouches && lastTouches.length === 2) {
-      const l0 = lastTouches[0], l1 = lastTouches[1];
-      const lastDist = Math.hypot(l0.clientX - l1.clientX, l0.clientY - l1.clientY);
-      if (lastDist > 0) zoomAt(midX, midY, zoomScale * dist / lastDist);
-    }
-    lastTouches = e.touches;
-  } else if (e.touches.length === 1 && !isPinching) {
-    // 1本指スクロール（ズーム中のみ）
-    if (zoomScale > minZoom) {
-      e.preventDefault();
-      const t = e.touches[0];
-      if (lastTouches && lastTouches.length === 1) {
-        zoomOffX += t.clientX - lastTouches[0].clientX;
-        zoomOffY += t.clientY - lastTouches[0].clientY;
-        clampOffset(); applyZoom();
-      }
-      lastTouches = e.touches;
-    }
+    const midX  = ((t0.clientX+t1.clientX)/2) - rect.left;
+    const midY  = ((t0.clientY+t1.clientY)/2) - rect.top;
+    if (lastPinchDist > 0) zoomAt(midX, midY, zoomScale * dist / lastPinchDist);
+    lastPinchDist = dist;
+    lastPinchMidX = midX;
+    lastPinchMidY = midY;
+  } else if (e.touches.length === 1 && wasPinching) {
+    // ピンチ後の1本指はパンのみ（点置き禁止）
+    const t = e.touches[0];
+    zoomOffX += t.clientX - lastPanX;
+    zoomOffY += t.clientY - lastPanY;
+    clampOffset(); applyZoom();
+    lastPanX = t.clientX;
+    lastPanY = t.clientY;
+  } else if (e.touches.length === 1 && zoomScale > minZoom) {
+    // ズーム中の1本指パン
+    const t = e.touches[0];
+    zoomOffX += t.clientX - lastPanX;
+    zoomOffY += t.clientY - lastPanY;
+    clampOffset(); applyZoom();
+    lastPanX = t.clientX;
+    lastPanY = t.clientY;
   }
 }, { passive: false });
 
 canvasWrap.addEventListener('touchend', e => {
-  if (e.touches.length < 2) isPinching = false;
-  lastTouches = e.touches;
-});
+  touchCount = e.touches.length;
+  // 全ての指が離れたらwasPinchingをリセット
+  if (e.touches.length === 0) {
+    wasPinching = false;
+  }
+  if (e.touches.length === 1) {
+    lastPanX = e.touches[0].clientX;
+    lastPanY = e.touches[0].clientY;
+  }
+}, { passive: true });
 
-// ===== Tap to place point =====
-// wrap座標 → canvas画像座標に変換
-function wrapToCanvas(wx, wy) {
-  return {
-    x: (wx - zoomOffX) / zoomScale,
-    y: (wy - zoomOffY) / zoomScale
-  };
-}
-
+// ===== Tap to place point（touchendで処理）=====
 canvasWrap.addEventListener('touchend', e => {
-  if (isPinching || e.changedTouches.length !== 1) return;
-  if (points.length >= 4) return;
+  // ピンチ中・ピンチ直後・複数指・指が残っている場合はすべて無視
+  if (wasPinching)              return;
+  if (e.changedTouches.length !== 1) return;
+  if (e.touches.length > 0)    return; // まだ指が残っている
+  if (points.length >= 4)      return;
+
   const t = e.changedTouches[0];
   const rect = canvasWrap.getBoundingClientRect();
-  const wx = t.clientX - rect.left;
-  const wy = t.clientY - rect.top;
-  const p = wrapToCanvas(wx, wy);
+  const p = wrapToCanvas(t.clientX - rect.left, t.clientY - rect.top);
   if (p.x < 0 || p.y < 0 || p.x > canvas.width || p.y > canvas.height) return;
   points.push(p);
   undoBtn.disabled = false;
@@ -930,8 +954,8 @@ canvasWrap.addEventListener('touchend', e => {
   updateInstruction();
 }, { passive: true });
 
+// マウス用クリック
 canvasWrap.addEventListener('click', e => {
-  // マウス用
   if (points.length >= 4) return;
   const rect = canvasWrap.getBoundingClientRect();
   const p = wrapToCanvas(e.clientX - rect.left, e.clientY - rect.top);
@@ -942,6 +966,13 @@ canvasWrap.addEventListener('click', e => {
   updateInstruction();
 });
 
+function wrapToCanvas(wx, wy) {
+  return {
+    x: (wx - zoomOffX) / zoomScale,
+    y: (wy - zoomOffY) / zoomScale
+  };
+}
+
 function drawCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(img, 0, 0);
@@ -951,8 +982,8 @@ function drawCanvas() {
     if (e) {
       ctx.save();
       ctx.strokeStyle = 'rgba(255,255,255,0.7)';
-      ctx.lineWidth = Math.max(2, 4 / zoomScale);
-      ctx.setLineDash([8, 5]);
+      ctx.lineWidth = Math.max(3, 6 / zoomScale);
+      ctx.setLineDash([10, 6]);
       ctx.beginPath();
       ctx.ellipse(e.cx, e.cy, e.a, e.b, 0, 0, Math.PI*2);
       ctx.stroke();
@@ -960,7 +991,9 @@ function drawCanvas() {
     }
   }
 
-  const dotR = Math.max(8, 16 / zoomScale);
+  // 点はズームに関係なく一定の見た目になるよう逆スケール
+  const dotR = Math.max(10, 22 / zoomScale);
+  const fontSize = Math.max(14, 22 / zoomScale);
   points.forEach((p, i) => {
     ctx.save();
     ctx.beginPath();
@@ -968,15 +1001,16 @@ function drawCanvas() {
     ctx.fillStyle = POINT_COLORS[i];
     ctx.fill();
     ctx.strokeStyle = 'white';
-    ctx.lineWidth = Math.max(2, 3 / zoomScale);
+    ctx.lineWidth = Math.max(2, 4 / zoomScale);
     ctx.stroke();
     ctx.restore();
 
     ctx.save();
-    ctx.font = `bold ${Math.max(12, 18 / zoomScale)}px sans-serif`;
+    ctx.font = `bold ${fontSize}px sans-serif`;
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
-    ctx.fillText(POINT_ICONS[i], p.x, p.y + dotR * 0.4);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(POINT_ICONS[i], p.x, p.y);
     ctx.restore();
   });
 }

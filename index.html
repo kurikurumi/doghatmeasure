@@ -140,6 +140,52 @@ body{font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;
   box-shadow:0 4px 16px rgba(212,132,90,.35);}
 .footer-copy{font-size:10px;color:#c0a898;margin-top:12px;}
 .hidden{display:none!important;}
+
+/* ── Tool tabs ── */
+.tool-tabs{display:flex;margin:0 12px 12px;border-radius:12px;
+  background:var(--warm);padding:4px;gap:4px;}
+.tool-tab{flex:1;padding:10px 8px;border:none;border-radius:9px;font-family:inherit;
+  font-size:12px;font-weight:600;color:#8a6a55;background:transparent;
+  cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.tool-tab.active{background:#fff;color:var(--dark);
+  box-shadow:0 1px 6px var(--shadow);}
+.tool-tab:active{transform:scale(.97);}
+
+/* ── Calibration ── */
+.calib-wrap{padding:16px 20px;}
+.calib-canvas-box{background:#1a120d;border-radius:10px;overflow:hidden;
+  display:flex;justify-content:center;margin-bottom:10px;}
+#calibCanvas{display:block;width:100%;touch-action:none;}
+.calib-note{font-size:11px;color:#7a5a45;text-align:center;
+  margin-bottom:12px;line-height:1.6;}
+.calib-adj{display:flex;align-items:center;justify-content:center;gap:12px;
+  margin-bottom:14px;}
+.calib-adj-val{font-size:13px;color:var(--dark);font-weight:600;
+  min-width:80px;text-align:center;}
+.btn-adj{width:44px;height:44px;border-radius:50%;border:none;font-size:20px;
+  font-weight:700;background:var(--warm);color:var(--dark);cursor:pointer;
+  -webkit-tap-highlight-color:transparent;display:flex;align-items:center;
+  justify-content:center;}
+.btn-adj:active{background:#eddfc5;transform:scale(.92);}
+.calib-saved{font-size:11px;color:var(--green);text-align:center;margin-bottom:8px;}
+
+/* ── Ruler ── */
+#rulerCanvasWrap{background:#1a120d;position:relative;}
+#rulerCanvas{display:block;width:100%;touch-action:none;cursor:ew-resize;}
+/* ルーラーのカードは左右マージンを小さくして定規を広く使う */
+#rulerP2 .card{margin:0 4px 16px;}
+.ruler-readout{display:flex;align-items:baseline;justify-content:center;
+  gap:6px;padding:12px 16px 4px;flex-wrap:wrap;}
+.r-label{font-size:10px;color:#b09080;text-transform:uppercase;letter-spacing:.06em;}
+.r-val{font-size:18px;font-weight:700;color:var(--dark);}
+.r-val.big{font-size:26px;color:var(--paw);}
+.r-sep{font-size:14px;color:#b09080;}
+.ruler-seg-list{font-size:11px;color:#8a6a55;text-align:center;
+  padding:0 16px 8px;line-height:1.8;}
+.ruler-final{padding:16px 20px;text-align:center;border-top:1px solid var(--warm);}
+.ruler-final-label{font-size:11px;color:#b09080;text-transform:uppercase;
+  letter-spacing:.1em;margin-bottom:6px;}
+.ruler-final-val{font-size:clamp(36px,10vw,54px);font-weight:900;color:var(--dark);line-height:1;}
 </style>
 </head>
 <body>
@@ -149,6 +195,80 @@ body{font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;
   <div class="subtitle">by くりくるみ｜犬の顔まわりのサイズを測定します</div>
 </div>
 
+<!-- ===== Tool tabs ===== -->
+<div class="tool-tabs">
+  <button class="tool-tab active" data-tool="ruler">📏 定規で計測（推奨）</button>
+  <button class="tool-tab" data-tool="photo">📸 写真で計測</button>
+</div>
+
+<!-- ===== RULER TOOL ===== -->
+<div id="toolRuler">
+
+  <!-- Phase R1: Calibration -->
+  <div id="rulerP1">
+    <div class="card">
+      <div class="instr-bar" style="background:var(--green);">📐 ステップ1 — 画面の校正（1回だけ）</div>
+      <div class="calib-wrap">
+        <div class="tip" style="margin:0 0 14px;">
+          <strong>500円玉</strong>（直径 26.5mm）を画面に当て、<br>
+          オレンジの縦線が硬貨の<strong>左右の端</strong>にぴったり合うよう調整してください<br>
+          ドラッグまたは ＋／－ ボタンで調整できます
+        </div>
+        <div class="calib-canvas-box">
+          <canvas id="calibCanvas" height="120"></canvas>
+        </div>
+        <p class="calib-note" id="calibNote">調整中…</p>
+        <div class="calib-adj">
+          <button class="btn-adj" id="calibMinus">－</button>
+          <span class="calib-adj-val" id="calibVal">—</span>
+          <button class="btn-adj" id="calibPlus">＋</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="calibDone">✅ ぴったり合いました！</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase R2: Measurement -->
+  <div id="rulerP2" class="hidden">
+    <div class="card">
+      <div class="instr-bar" style="background:var(--green);">📏 ひもで頭まわりを計測</div>
+      <div class="tip" style="margin:14px 16px 10px;">
+        ① 紐を頭に一周巻いてカット → ② 紐を画面の<strong>左端</strong>に当ててマーカーをドラッグ<br>
+        紐が画面より長い場合：右端まで測って「追加」→ 残りを繰り返す
+      </div>
+      <div id="rulerCanvasWrap">
+        <canvas id="rulerCanvas" height="110"></canvas>
+      </div>
+      <div class="ruler-readout">
+        <span class="r-label">現在</span>
+        <span class="r-val" id="rCur">0.0 cm</span>
+        <span class="r-sep">＋ 累計</span>
+        <span class="r-val" id="rAcc">0.0 cm</span>
+        <span class="r-sep">＝</span>
+        <span class="r-val big" id="rTotal">0.0 cm</span>
+      </div>
+      <div class="ruler-seg-list" id="rSegList"></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="rAddBtn" disabled>➕ この区間を追加</button>
+        <button class="btn btn-ghost"   id="rResetBtn">🔄 全リセット</button>
+      </div>
+      <div id="rulerFinal" class="ruler-final hidden">
+        <div class="ruler-final-label">計測完了 — 頭まわり</div>
+        <div class="ruler-final-val" id="rulerFinalVal">0.0<span class="res-unit"> cm</span></div>
+        <div class="res-note" style="margin-top:6px;">この数値をくりくるみにお伝えください 🐾</div>
+      </div>
+      <div class="btn-row" style="padding-top:8px;">
+        <button class="btn btn-sub" id="rCalibAgain">📐 校正し直す</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /toolRuler -->
+
+<!-- ===== PHOTO TOOL ===== -->
+<div id="toolPhoto" class="hidden">
 <div class="steps">
   <div class="step active" id="s1"><div class="step-num">1</div>&nbsp;写真選択</div>
   <div class="step-sep"></div>
@@ -270,6 +390,7 @@ body{font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;
     </div>
   </div>
 </div>
+</div><!-- /toolPhoto -->
 
 <div class="footer">
   <div class="footer-sub">計測が終わったら、ぜひオーダーを 🐾</div>
@@ -282,6 +403,306 @@ body{font-family:-apple-system,'Hiragino Sans','Noto Sans JP',sans-serif;
 <script>
 'use strict';
 
+// ═══════════════════════════════════════════════════════════
+//  TOOL TAB SWITCHING
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.tool-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tool-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const t = btn.dataset.tool;
+    document.getElementById('toolRuler').classList.toggle('hidden', t !== 'ruler');
+    document.getElementById('toolPhoto').classList.toggle('hidden', t !== 'photo');
+  });
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SCREEN RULER — CALIBRATION
+// ═══════════════════════════════════════════════════════════
+// 500円玉の直径 = 26.5mm = 2.65cm
+const COIN_CM = 2.65;
+
+let calibPx = 160;       // current line-span in canvas pixels
+let pixelsPerCm = 0;     // set after calibration
+
+const calibCanvas = document.getElementById('calibCanvas');
+const calibCtx    = calibCanvas.getContext('2d');
+
+function initCalib() {
+  const wrap = calibCanvas.parentElement;
+  void wrap.offsetHeight;
+  const w = wrap.clientWidth || 340;
+  calibCanvas.width  = w;
+  calibCanvas.height = 120;
+  // Restore saved calibration if available
+  const saved = parseFloat(localStorage.getItem('ppc') || '0');
+  if (saved > 5 && saved < 500) {
+    pixelsPerCm = saved;
+    // Convert cm→canvas pixels for display
+    calibPx = Math.round(pixelsPerCm * COIN_CM);
+  } else {
+    // Rough initial estimate: 55 CSS px ≈ 1 cm on typical phone
+    calibPx = Math.round(55 * COIN_CM);
+  }
+  drawCalib();
+}
+
+function drawCalib() {
+  const w = calibCanvas.width, h = calibCanvas.height;
+  const cx = w / 2;
+  const lx = cx - calibPx / 2;
+  const rx = cx + calibPx / 2;
+
+  calibCtx.clearRect(0, 0, w, h);
+  calibCtx.fillStyle = '#1a120d';
+  calibCtx.fillRect(0, 0, w, h);
+
+  // Coin guide circle (dashed)
+  calibCtx.save();
+  calibCtx.strokeStyle = 'rgba(212,132,90,0.45)';
+  calibCtx.lineWidth = 2; calibCtx.setLineDash([5,4]);
+  calibCtx.beginPath(); calibCtx.arc(cx, h/2, calibPx/2, 0, Math.PI*2);
+  calibCtx.stroke(); calibCtx.restore();
+
+  // Coin text inside
+  calibCtx.fillStyle = 'rgba(212,132,90,0.5)';
+  calibCtx.font = '11px sans-serif'; calibCtx.textAlign = 'center';
+  calibCtx.textBaseline = 'middle';
+  calibCtx.fillText('🪙 500円玉', cx, h/2);
+
+  // Left line (green = fixed reference)
+  calibCtx.fillStyle = '#7BAE7F';
+  calibCtx.fillRect(lx - 2, 8, 4, h - 16);
+
+  // Right line (orange = adjustable)
+  calibCtx.fillStyle = '#D4845A';
+  calibCtx.fillRect(rx - 2, 8, 4, h - 16);
+
+  // Labels
+  calibCtx.font = '10px sans-serif';
+  calibCtx.fillStyle = '#7BAE7F'; calibCtx.textAlign = 'left';
+  calibCtx.fillText('◀ 左端', lx + 6, 16);
+  calibCtx.fillStyle = '#D4845A'; calibCtx.textAlign = 'right';
+  calibCtx.fillText('右端 ▶', rx - 6, 16);
+
+  // 推定mm表示（55 CSS px ≈ 1cm は一般的なスマホの概算）
+  const estimMm = (calibPx / 5.5).toFixed(1);
+  document.getElementById('calibNote').textContent =
+    '← 左線に硬貨の左端 / 右線に右端を合わせてください →';
+  document.getElementById('calibVal').textContent = `推定 ${estimMm} mm`;
+}
+
+// +/- buttons（pointerdownで即時 + ホールドで連続）
+let calibTimer = null;
+function calibStep(dir) {
+  calibPx = Math.max(20, Math.min(calibCanvas.width - 20, calibPx + dir));
+  drawCalib();
+}
+['calibMinus','calibPlus'].forEach((id, i) => {
+  const el = document.getElementById(id);
+  const dir = i === 0 ? -2 : 2;
+  el.addEventListener('pointerdown', e => {
+    e.preventDefault();
+    calibStep(dir);                                    // 即時1回
+    calibTimer = setInterval(() => calibStep(dir), 80); // ホールドで連続
+  });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev =>
+    el.addEventListener(ev, () => clearInterval(calibTimer)));
+});
+
+// Drag on calibCanvas to move right line
+let calibDrag = false;
+calibCanvas.addEventListener('touchstart', e => {
+  e.preventDefault(); calibDrag = true;
+  moveCalibRight(e.touches[0].clientX);
+}, { passive: false });
+calibCanvas.addEventListener('touchmove', e => {
+  e.preventDefault();
+  if (calibDrag) moveCalibRight(e.touches[0].clientX);
+}, { passive: false });
+calibCanvas.addEventListener('touchend', () => { calibDrag = false; }, { passive: true });
+calibCanvas.addEventListener('mousedown', e => { calibDrag = true; moveCalibRight(e.clientX); });
+calibCanvas.addEventListener('mousemove', e => { if (calibDrag) moveCalibRight(e.clientX); });
+calibCanvas.addEventListener('mouseup',   () => { calibDrag = false; });
+
+function moveCalibRight(clientX) {
+  const rect = calibCanvas.getBoundingClientRect();
+  const x    = (clientX - rect.left) * (calibCanvas.width / rect.width);
+  const cx   = calibCanvas.width / 2;
+  // 画面上どこをドラッグしても右ラインが追従（中心から距離を幅に換算）
+  const newPx = Math.round(Math.abs(x - cx) * 2);
+  calibPx = Math.max(20, Math.min(calibCanvas.width - 20, newPx));
+  drawCalib();
+}
+
+document.getElementById('calibDone').addEventListener('click', () => {
+  pixelsPerCm = calibPx / COIN_CM;
+  localStorage.setItem('ppc', pixelsPerCm.toFixed(4));
+  document.getElementById('rulerP1').classList.add('hidden');
+  document.getElementById('rulerP2').classList.remove('hidden');
+  requestAnimationFrame(initRuler);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  SCREEN RULER — MEASUREMENT
+// ═══════════════════════════════════════════════════════════
+let rMarkerCm = 0;   // current marker position
+let rAccCm    = 0;   // accumulated total from previous segments
+let rSegs     = [];  // segment history
+
+const rulerCanvas = document.getElementById('rulerCanvas');
+const rCtxR       = rulerCanvas.getContext('2d');
+
+function initRuler() {
+  const wrap = document.getElementById('rulerCanvasWrap');
+  void wrap.offsetHeight;
+  rulerCanvas.width  = wrap.clientWidth || 340;
+  rulerCanvas.height = 110;
+  rMarkerCm = 0;
+  updateRulerUI();
+  drawRuler();
+}
+
+function rulerMaxCm() {
+  if (!pixelsPerCm || pixelsPerCm <= 0) return 10; // 未校正時フォールバック
+  return rulerCanvas.width / pixelsPerCm;
+}
+
+function drawRuler() {
+  const w = rulerCanvas.width, h = rulerCanvas.height;
+  const ppc = pixelsPerCm;
+  const maxCm = rulerMaxCm();
+  const mX = rMarkerCm * ppc;
+  const baseY = 52;   // tick baseline
+  const mY    = 85;   // marker circle center
+
+  rCtxR.clearRect(0, 0, w, h);
+  rCtxR.fillStyle = '#fff8f0';
+  rCtxR.fillRect(0, 0, w, h);
+
+  // Orange bar 0→marker
+  rCtxR.fillStyle = 'rgba(212,132,90,0.3)';
+  rCtxR.fillRect(0, baseY - 3, mX, 6);
+
+  // Baseline
+  rCtxR.fillStyle = '#e0c8b8';
+  rCtxR.fillRect(0, baseY, w, 1);
+
+  // Tick marks
+  for (let mm = 0; mm <= Math.ceil(maxCm * 10); mm++) {
+    const x = mm * ppc / 10;
+    if (x > w + 1) break;
+    const isCm  = mm % 10 === 0;
+    const is5mm = mm % 5  === 0;
+    const th    = isCm ? 22 : is5mm ? 13 : 7;
+    rCtxR.fillStyle = isCm ? '#7a5a45' : '#c5a898';
+    rCtxR.fillRect(Math.round(x), baseY - th, 1, th);
+    if (isCm) {
+      rCtxR.fillStyle = '#7a5a45';
+      rCtxR.font = '11px sans-serif';
+      rCtxR.textAlign = mm === 0 ? 'left' : 'center';
+      rCtxR.textBaseline = 'top';
+      rCtxR.fillText(mm / 10, Math.round(x), baseY + 3);
+    }
+  }
+
+  // Marker stem
+  rCtxR.fillStyle = '#D4845A';
+  rCtxR.fillRect(mX - 1.5, 6, 3, mY - 6 - 16);
+
+  // Marker circle
+  rCtxR.beginPath();
+  rCtxR.arc(mX, mY, 18, 0, Math.PI * 2);
+  rCtxR.fillStyle = '#D4845A';
+  rCtxR.fill();
+  rCtxR.strokeStyle = '#fff';
+  rCtxR.lineWidth = 2.5;
+  rCtxR.stroke();
+
+  // Marker label
+  rCtxR.fillStyle = '#fff';
+  rCtxR.font = 'bold 11px sans-serif';
+  rCtxR.textAlign = 'center';
+  rCtxR.textBaseline = 'middle';
+  rCtxR.fillText(rMarkerCm.toFixed(1), mX, mY);
+}
+
+function updateRulerUI() {
+  const total = rAccCm + rMarkerCm;
+  document.getElementById('rCur').textContent   = rMarkerCm.toFixed(1) + ' cm';
+  document.getElementById('rAcc').textContent   = rAccCm.toFixed(1) + ' cm';
+  document.getElementById('rTotal').textContent = total.toFixed(1) + ' cm';
+  document.getElementById('rAddBtn').disabled   = rMarkerCm < 0.2;
+
+  const segsEl = document.getElementById('rSegList');
+  if (rSegs.length > 0) {
+    segsEl.textContent = '区間: ' + rSegs.map((s,i)=>`${i+1}回目 ${s.toFixed(1)}cm`).join(' / ');
+  } else { segsEl.textContent = ''; }
+
+  const finalEl = document.getElementById('rulerFinal');
+  if (total > 0.5) {
+    finalEl.classList.remove('hidden');
+    document.getElementById('rulerFinalVal').innerHTML =
+      total.toFixed(1) + '<span class="res-unit"> cm</span>';
+  } else {
+    finalEl.classList.add('hidden');
+  }
+}
+
+function setRulerMarker(clientX) {
+  const rect = rulerCanvas.getBoundingClientRect();
+  const x = (clientX - rect.left) * (rulerCanvas.width / rect.width);
+  rMarkerCm = Math.max(0, Math.min(rulerMaxCm(), x / pixelsPerCm));
+  updateRulerUI();
+  drawRuler();
+}
+
+let rDrag = false;
+rulerCanvas.addEventListener('touchstart', e => {
+  e.preventDefault(); rDrag = true; setRulerMarker(e.touches[0].clientX);
+}, { passive: false });
+rulerCanvas.addEventListener('touchmove', e => {
+  e.preventDefault(); if (rDrag) setRulerMarker(e.touches[0].clientX);
+}, { passive: false });
+rulerCanvas.addEventListener('touchend',   () => { rDrag = false; }, { passive: true });
+rulerCanvas.addEventListener('mousedown',  e => { rDrag = true;  setRulerMarker(e.clientX); });
+rulerCanvas.addEventListener('mousemove',  e => { if (rDrag) setRulerMarker(e.clientX); });
+rulerCanvas.addEventListener('mouseup',    () => { rDrag = false; });
+
+document.getElementById('rAddBtn').addEventListener('click', () => {
+  rSegs.push(rMarkerCm);
+  rAccCm += rMarkerCm;
+  rMarkerCm = 0;
+  updateRulerUI();
+  drawRuler();
+});
+document.getElementById('rResetBtn').addEventListener('click', () => {
+  rMarkerCm = 0; rAccCm = 0; rSegs = [];
+  document.getElementById('rulerFinal').classList.add('hidden');
+  updateRulerUI(); drawRuler();
+});
+document.getElementById('rCalibAgain').addEventListener('click', () => {
+  document.getElementById('rulerP2').classList.add('hidden');
+  document.getElementById('rulerP1').classList.remove('hidden');
+  initCalib();
+});
+
+// ─── Init on load ───────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  initCalib();
+  // If already calibrated, skip to ruler
+  const saved = parseFloat(localStorage.getItem('ppc') || '0');
+  if (saved > 5 && saved < 500) {
+    pixelsPerCm = saved;
+    document.getElementById('rulerP1').classList.add('hidden');
+    document.getElementById('rulerP2').classList.remove('hidden');
+    requestAnimationFrame(initRuler);
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+//  PHOTO TOOL
+// ═══════════════════════════════════════════════════════════
 // ── State ──────────────────────────────────────────────────
 let img = null, imgDataURL = null;
 let facePoints = [];   // {x,y} in image-pixel coords
